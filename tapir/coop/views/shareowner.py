@@ -290,7 +290,7 @@ class ShareOwnerTable(django_tables2.Table):
         fields = [
             "id",
             "attended_welcome_session",
-            "from_startnext",
+            "is_early_bird",
             "ratenzahlung",
             "is_company",
         ]
@@ -298,7 +298,7 @@ class ShareOwnerTable(django_tables2.Table):
             "id",
             "display_name",
             "status",
-            "from_startnext",
+            "is_early_bird",
             "attended_welcome_session",
             "ratenzahlung",
             "is_company",
@@ -336,6 +336,8 @@ class ShareOwnerTable(django_tables2.Table):
             color = "orange"
         elif status == MemberStatus.ACTIVE:
             color = "green"
+        elif status == MemberStatus.PAYING:
+            color = "green"
         else:
             color = "blue"
 
@@ -362,7 +364,7 @@ class ShareOwnerFilter(django_filters.FilterSet):
     class Meta:
         model = ShareOwner
         fields = [
-            "from_startnext",
+            "is_early_bird",
             "attended_welcome_session",
             "ratenzahlung",
             "is_company",

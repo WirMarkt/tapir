@@ -67,10 +67,16 @@ class ShareOwner(models.Model):
     is_investing = models.BooleanField(
         verbose_name=_("Is investing member"), default=False
     )
+    is_paying = models.BooleanField(
+        verbose_name=_("Is paying member"), default=False
+    )
+    signed_sepa_mandate = models.BooleanField(default=False)
+    sepa_account_holder = models.CharField(default="", max_length=150)
+    sepa_iban = models.CharField(default="", max_length=34)
     ratenzahlung = models.BooleanField(verbose_name=_("Ratenzahlung"), default=False)
     # TODO(Leon Handreke): Remove this temporary field again after the Startnext member integration is done
     # It's only used to send special emails to these members
-    from_startnext = models.BooleanField(default=False)
+    is_early_bird = models.BooleanField(default=False)
     attended_welcome_session = models.BooleanField(
         _("Attended Welcome Session"), default=False
     )
@@ -104,6 +110,7 @@ class ShareOwner(models.Model):
             else:
                 return self.filter(
                     share_ownerships__in=active_ownerships,
+                    is_paying=(status == MemberStatus.PAYING),
                     is_investing=(status == MemberStatus.INVESTING),
                 ).distinct()
 
@@ -181,11 +188,17 @@ class ShareOwner(models.Model):
         if self.is_investing:
             return MemberStatus.INVESTING
 
+        if self.is_paying:
+            return MemberStatus.PAYING
+
         return MemberStatus.ACTIVE
 
+    # TODO expose this via API so App can determine if user is eligible to shop to reduce effort of welcome desk /
+    #  cashier
     def can_shop(self):
         return (
             self.user is not None
+            # TODO: WirMarkt: should also be true if member is paying monthly fee and has paid within last 30 days
             and self.user.shift_user_data.is_balance_ok()
             and not self.is_investing
         )
@@ -195,12 +208,14 @@ class MemberStatus:
     SOLD = "sold"
     INVESTING = "investing"
     ACTIVE = "active"
+    PAYING = "paying"
 
 
 MEMBER_STATUS_CHOICES = (
     (MemberStatus.SOLD, _("Sold")),
     (MemberStatus.INVESTING, _("Investing")),
     (MemberStatus.ACTIVE, _("Active")),
+    (MemberStatus.PAYING, _("Paying")),
 )
 
 
@@ -257,7 +272,7 @@ class DraftUser(models.Model):
     )
     # TODO(Leon Handreke): Remove this temporary field again after the Startnext member integration is done
     # It's only used to send special emails to these members
-    from_startnext = models.BooleanField(default=False)
+    is_early_bird = models.BooleanField(default=False)
     startnext_welcome_email_sent = models.BooleanField(default=False)
 
     attended_welcome_session = models.BooleanField(
@@ -300,8 +315,8 @@ class DraftUser(models.Model):
         )
 
     def send_startnext_email(self):
-        if not self.from_startnext:
-            raise Exception("Not from startnext")
+        if not self.is_early_bird:
+            raise Exception("Not Early Bird")
         if self.startnext_welcome_email_sent:
             print(
                 "Welcome email for %d %s already sent"

@@ -26,7 +26,11 @@
                         <span style="color: blue;">{% trans "Investing" %}</span>
                     {% else %}
                         {% if owner.get_active_share_ownerships.count > 0 %}
+                            {% if owner.is_paying %}
+                            <span style="color: green;">{% trans "Paying" %}</span>
+                            {% else %}
                             <span style="color: green;">{% trans "Active" %}</span>
+                            {% endif %}
                         {% else %}
                             <span style="color: red;">{% trans "Inactive" %}</span>
                         {% endif %}
@@ -35,8 +39,8 @@
             </div>
 
             <div class="row m-1">
-                <div class="col-5 font-weight-bold text-right">From Startnext:</div>
-                <div class="col-7">{{ owner.from_startnext|yesno:"Yes,No" }}</div>
+                <div class="col-5 font-weight-bold text-right">Early Bird:</div>
+                <div class="col-7">{{ owner.is_early_bird|yesno:"Yes,No" }}</div>
             </div>
 
             {% if object.ratenzahlung %}
@@ -76,8 +80,14 @@
             </div>
 
             <div class="row m-1">
-                <div class="col-5 font-weight-bold text-right">{% trans "Has paid" %}:</div>
+                <div class="col-5 font-weight-bold text-right">{% trans "Has paid membership fee" %}:</div>
                 <div class="col-7">{{ owner.paid_membership_fee|yesno:"Yes,No" }}</div>
+            </div>
+
+            <div class="row m-1">
+                <!-- TODO add "Mark Signed" button if not signed-->
+                <div class="col-5 font-weight-bold text-right">{% trans "Signed SEPA Mandate" %}:</div>
+                <div class="col-7">{{ owner.signed_sepa_mandate|yesno:"Yes,No" }}</div>
             </div>
 
             <div class="row m-1">

@@ -654,8 +654,8 @@ msgid "Owned shares"
 msgstr "Anteile"
 
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:79
-msgid "Has paid"
-msgstr "Hat bezahlt"
+msgid "Has paid membership fee"
+msgstr "Hat Mitgliedschaft bezahlt"
 
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:84
 msgid "Willing to gift a share"
@@ -1400,7 +1400,7 @@ msgstr "Endsdatum"
 
 #: shifts/templates/shifts/shiftexemption_list.html:23
 msgid "Is active"
-msgstr "Inaktiv"
+msgstr "Ist aktiv"
 
 #: shifts/templates/shifts/shiftuserdata_form.html:16
 msgid "Edit user shift data"

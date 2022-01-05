@@ -50,7 +50,7 @@ class TestStarnextFilter(TapirMemberListFilterBase):
         included_users = [self.get_test_user("elia.fontai")]
         excluded_users = [self.get_test_user("nicolas.vicente")]
         self.check_member_list_filter(
-            "id_from_startnext", "true", included_users, excluded_users
+            "id_is_early_bird", "true", included_users, excluded_users
         )
 
 

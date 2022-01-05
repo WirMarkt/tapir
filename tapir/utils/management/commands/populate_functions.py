@@ -166,6 +166,7 @@ def populate_users():
 
         is_company = randomizer % 70 == 0
         is_investing = randomizer % 7 == 0 or is_company
+        is_paying = randomizer % 3 == 0 and not is_investing
 
         tapir_user: TapirUser = None
         if not is_company and not is_investing:
@@ -188,8 +189,10 @@ def populate_users():
         else:
             share_owner.blank_info_fields()
 
-        share_owner.is_investing = randomizer % 7 == 0 or is_company
-        share_owner.from_startnext = randomizer % 5 == 0
+        share_owner.is_investing = is_investing
+        share_owner.is_paying = is_paying
+        share_owner.is_early_bird = randomizer % 5 == 0
+        share_owner.signed_sepa_mandate = randomizer % 5 == 0
         share_owner.ratenzahlung = randomizer % 8 == 0
         share_owner.attended_welcome_session = randomizer % 9 != 0
         if share_owner.is_company:
@@ -215,6 +218,7 @@ def populate_users():
         if (
             not is_company
             and not is_investing
+            and not is_paying
             and not ShiftAttendanceTemplate.objects.filter(user=tapir_user).exists()
         ):
             if random.randint(1, 7) == 1:
