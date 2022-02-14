@@ -1,8 +1,30 @@
-Dear {{ owner.get_display_name }},
+{% load i18n %}
+{% blocktrans with full_name=owner.get_info.get_display_name %}
+Hello {{ full_name}},
+{% endblocktrans %}
 
-Thanks for your interest in SuperCoop!
+{% blocktrans %}
+Thanks for your interest in WirMarkt!
 
-Joined to this email is your pre-filled Beteiligungserklärung.
+See attached your pre-filled Beteiligungserklärung.
 
-Kooperative Grüße,
-Eugénie, Jessica, Johanna und Marie für das SuperCoop Team
+To launch WirMarkt, we are dependent on the financial support of our members. This is because we need a lot of money for the first WirMarkt.
+
+We are currently working on a loan commitment for our project. As collateral, we need to raise our own funds (deposits and loans) as a community. These own funds will help us to finance the expansion of the store and the furnishing of the supermarket.
+
+So if you want to take over cooperative shares beyond the compulsory share, you can do this at any time, even when joining the cooperative. To do so, simply enter the corresponding value in the "Declaration of Participation" form. If you are already a member, you can take over additional shares in the WirMarkt app.
+
+You can also give WirMarkt a subordinated loan. This is possible from as little as 500 euros. At the end of the 8-year term, you will receive your loan amount back, including interest.
+
+These loans are subject to 1-3% interest. If you want to give us a loan, please send us the signed loan agreement in duplicate by mail.
+
+All documents can be downloaded from our website: https://wirmarkt.de/download.
+
+There you will also find the operating concept, a short summary of our project with figures on business management and financing.
+
+In advance, a very big thank you for your support, should you decide to give a loan to the cooperative or to take over more shares. Our strength and potential lies in community and collective action. That's why your support is so valuable.
+If you have questions about loans and need more information about the co-op, email office@wirmarkt.de.
+
+Best regards,
+Barbara, Kristina and Fabian
+{% endblocktrans %}

@@ -3,8 +3,8 @@ services:
   openldap:
     image: "osixia/openldap"
     environment:
-      LDAP_ORGANISATION: "SuperCoop Berlin"
-      LDAP_DOMAIN: "supercoop.de"
+      LDAP_ORGANISATION: "WirMarkt Hamburg"
+      LDAP_DOMAIN: "wirmarkt.de"
       LDAP_ADMIN_PASSWORD: "admin"
       LDAP_READONLY_USER: "true"
     ports:
@@ -24,6 +24,11 @@ services:
     environment:
       VIRTUAL_HOST: localhost
       DEBUG: 1
+      LDAP_URL: "ldap://cn=admin,dc=wirmarkt,dc=de:admin@openldap"
+      REG_PERSON_BASE_DN: "ou=people,dc=wirmarkt,dc=de"
+      REG_GROUP_BASE_DN: "ou=groups,dc=wirmarkt,dc=de"
+      LDAP_WELCOME_DESK_ID: "CN=welcome-desk.members.wirmarkt.de,O=WirMarkt,C=DE"
+
     depends_on:
       - openldap
       - db
@@ -70,6 +75,10 @@ services:
       - .:/app
     environment:
       DEBUG: 1
+      LDAP_URL: "ldap://cn=admin,dc=wirmarkt,dc=de:admin@openldap"
+      REG_PERSON_BASE_DN: "ou=people,dc=wirmarkt,dc=de"
+      REG_GROUP_BASE_DN: "ou=groups,dc=wirmarkt,dc=de"
+      LDAP_WELCOME_DESK_ID: "CN=welcome-desk.members.wirmarkt.de,O=WirMarkt,C=DE"
     depends_on:
       - redis
 
@@ -82,6 +91,10 @@ services:
       - .:/app
     environment:
       DEBUG: 1
+      LDAP_URL: "ldap://cn=admin,dc=wirmarkt,dc=de:admin@openldap"
+      REG_PERSON_BASE_DN: "ou=people,dc=wirmarkt,dc=de"
+      REG_GROUP_BASE_DN: "ou=groups,dc=wirmarkt,dc=de"
+      LDAP_WELCOME_DESK_ID: "CN=welcome-desk.members.wirmarkt.de,O=WirMarkt,C=DE"
     depends_on:
       - redis
 

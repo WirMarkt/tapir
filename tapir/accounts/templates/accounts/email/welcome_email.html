@@ -1,7 +1,7 @@
 {% load i18n %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="utf-8">
     <title>{% translate 'Welcome' %}</title>
@@ -9,8 +9,11 @@
 <body>
 {% blocktranslate with user_display_name=tapir_user.get_display_name %}
     <p>Dear {{ user_display_name }},</p>
-    <p>we just created an account for you in our SuperCoop member system. Here you can view your upcoming shifts, book an additional shift if you'd like or mark your shift as “looking for a stand-in” (for example when you go on vacation). <br/>
-        Please see the <a href="https://wiki.supercoop.de/wiki/Member_Manual">Member Manual</a> section III for more information on the Stand-in System.</p>
+    <p>
+        we've just created an account for you in our {{ coop_name }} member system. Here you can view your upcoming shifts,
+        book an additional shift if you'd like or mark your shift as “looking for a stand-in” (for example when you go
+        on vacation).
+    </p>
 {% endblocktranslate %}
 
 <p>
@@ -22,7 +25,7 @@
         {% endif %}
     {% else %}
         {% blocktranslate %}
-            Flying members: Please keep in mind that you must have at least one shift “banked” for each shift cycle. For more information please see the <a href="https://wiki.supercoop.de/wiki/Member_Manual">Member Manual</a> .
+            Flying members: Please keep in mind that you must have at least one shift “banked” for each shift cycle.
         {% endblocktranslate %}
     {% endif %}
 </p>
@@ -31,17 +34,18 @@
 {% url "password_reset" as password_reset_request_url %}
 <p>
     {% blocktranslate with username=tapir_user.username %}
-        <p>Your username is *{{ username }}* . In order to login to your account, you first have to set a password : <a href="{{ site_url }}{{ password_reset_confirm_url }}">Click here to set your password</a></p>
-        <p>This link is only valid for a few weeks. Should it expire, you can get a new one here : <a href="{{ site_url }}{{ password_reset_request_url }}">Click here to get a new link</a></p>
-        <p>You can also login to the SuperCoop wiki with that account.</p>
-        <p>Alternatively, as for any other question, you can always contact the <a href="https://wiki.supercoop.de/wiki/Mitgliederb%C3%BCro_-_Member_Office">Member Office</a></p>
+    <p>Your username is <strong>{{ username }}</strong>. In order to log in to your account, you first have to set a password: <a href="{{ site_url }}{{ password_reset_confirm_url }}">Click here to set your password</a></p>
+    <p>This link is only valid for a few weeks. Should it expire, you can get a new one here : <a href="{{ site_url }}{{ password_reset_request_url }}">Click here to get a new link</a></p>
     {% endblocktranslate %}
 </p>
+
+
 <p>
     {% blocktranslate %}
-        Cooperative regards, <br />
-        Your SuperCoop Berlin Member Office team.
+        Best regards,</br>
+        Barbara, Kristina and Fabian
     {% endblocktranslate %}
 </p>
+
 </body>
 </html>
