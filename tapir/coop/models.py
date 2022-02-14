@@ -60,6 +60,9 @@ class ShareOwner(models.Model):
     is_investing = models.BooleanField(
         verbose_name=_("Is investing member"), default=False
     )
+    signed_sepa_mandate = models.BooleanField(default=False)
+    sepa_account_holder = models.CharField(default="", max_length=150, blank=True)
+    sepa_iban = models.CharField(default="", max_length=34, blank=True)
     ratenzahlung = models.BooleanField(verbose_name=_("Ratenzahlung"), default=False)
     attended_welcome_session = models.BooleanField(
         _("Attended Welcome Session"), default=False
