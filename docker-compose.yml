@@ -3,7 +3,7 @@ services:
   openldap:
     image: "osixia/openldap"
     environment:
-      LDAP_ORGANISATION: "WirMarkt Hamburg"
+      LDAP_ORGANISATION: "WirMarkt Supermarkt Hamburg eG"
       LDAP_DOMAIN: "wirmarkt.de"
       LDAP_ADMIN_PASSWORD: "admin"
       LDAP_READONLY_USER: "true"
