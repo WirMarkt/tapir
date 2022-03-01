@@ -115,7 +115,7 @@ WSGI_APPLICATION = "tapir.wsgi.application"
 DATABASES = {
     "default": env.db(default="postgresql://tapir:tapir@db:5432/tapir"),
     "ldap": env.db_url(
-        "LDAP_URL", default="ldap://cn=admin,dc=supercoop,dc=de:admin@openldap"
+        "LDAP_URL", default="ldap://cn=admin,dc=wirmarkt,dc=de:admin@openldap"
     ),
 }
 
@@ -178,13 +178,13 @@ elif EMAIL_ENV == "test":
 elif EMAIL_ENV == "prod":
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = env("EMAIL_HOST", default="smtp-relay.gmail.com")
-    EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="mitglied@supercoop.de")
+    EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="office@wirmarkt.de")
     EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
 
-EMAIL_ADDRESS_MEMBER_OFFICE = "mitglied@supercoop.de"
-COOP_NAME = "SuperCoop Berlin"
+EMAIL_ADDRESS_MEMBER_OFFICE = "office@wirmarkt.de"
+COOP_NAME = "WirMarkt Hamburg"
 FROM_EMAIL_MEMBER_OFFICE = f"{COOP_NAME} Mitgliederbüro <{EMAIL_ADDRESS_MEMBER_OFFICE}>"
 DEFAULT_FROM_EMAIL = FROM_EMAIL_MEMBER_OFFICE
 
@@ -193,7 +193,7 @@ DEFAULT_FROM_EMAIL = FROM_EMAIL_MEMBER_OFFICE
 ADMINS = tuple(email.utils.parseaddr(x) for x in env.list("DJANGO_ADMINS", default=[]))
 # Crash emails will come from this address.
 # NOTE(Leon Handreke): I don't know if our Google SMTP will reject other senders, so play it safe.
-SERVER_EMAIL = env("SERVER_EMAIL", default="mitglied@supercoop.de")
+SERVER_EMAIL = env("SERVER_EMAIL", default="office@wirmarkt.de")
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
@@ -207,9 +207,9 @@ SELECT2_I18N_PATH = "core/select2/4.0.13/js/i18n"
 
 WEASYPRINT_BASEURL = "/"
 
-REG_PERSON_BASE_DN = "ou=people,dc=supercoop,dc=de"
+REG_PERSON_BASE_DN = "ou=people,dc=wirmarkt,dc=de"
 REG_PERSON_OBJECT_CLASSES = ["inetOrgPerson", "organizationalPerson", "person"]
-REG_GROUP_BASE_DN = "ou=groups,dc=supercoop,dc=de"
+REG_GROUP_BASE_DN = "ou=groups,dc=wirmarkt,dc=de"
 REG_GROUP_OBJECT_CLASSES = ["groupOfNames"]
 
 # Groups are stored in the LDAP tree
@@ -228,7 +228,9 @@ PERMISSIONS = {
 }
 
 # Permissions granted to client presenting a given SSL client cert. Currently used for the welcome desk machines.
-LDAP_WELCOME_DESK_ID = "CN=welcome-desk.members.supercoop.de,O=SuperCoop Berlin eG,C=DE"
+LDAP_WELCOME_DESK_ID = (
+    "CN=welcome-desk.members.wirmarkt.de,O=WirMarkt Supermarkt Hamburg eG,C=DE"
+)
 CLIENT_PERMISSIONS = {
     LDAP_WELCOME_DESK_ID: [
         "welcomedesk.view",
