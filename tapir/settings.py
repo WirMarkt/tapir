@@ -240,7 +240,7 @@ CLIENT_PERMISSIONS = {
 AUTH_USER_MODEL = "accounts.TapirUser"
 LOGIN_REDIRECT_URL = "accounts:user_me"
 
-SITE_URL = env("SITE_URL", default="http://127.0.0.1:8000")
+SITE_URL = env("SITE_URL", default="http://localhost:8000")
 
 PHONENUMBER_DEFAULT_REGION = "DE"
 
