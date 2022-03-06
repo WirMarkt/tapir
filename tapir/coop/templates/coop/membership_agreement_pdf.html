@@ -29,9 +29,10 @@
         </span>
         {% endif %}
         <div style="margin-top: 2mm;">
-            WirMarkt Supermarkt Hamburg eG<br />
-            Straße 1<br />
-            12345 Stadt
+            WirMarkt Supermarkt Hamburg eG i.G.<br/>
+            c/o Impact Hub Hamburg GmbH<br/>
+            Schomburgstr. 50<br/>
+            22767 Hamburg
         </div>
     </div>
     <div style="flex-grow: 1"></div>
@@ -41,7 +42,7 @@
 </div>
 
 <div style="text-align: center; font-size: 14pt; font-weight: bold;">
-    Beteiligungserklärung <em>WirMarkt Supermarkt Hamburg eG</em>
+    Beteiligungserklärung <br/><em>WirMarkt Supermarkt Hamburg eG i.G.</em>
 </div>
 
 <div style="margin-top: 10mm; line-height: 1.8rem;">
@@ -109,16 +110,16 @@
             {% endif %}
         </div>
         <div style="flex: 1">
-            Ich beantrage hiermit die Aufnahme in die <strong>WirMarkt Supermarkt Hamburg eG</strong>. Ich möchte mich mit insgesamt
+            Ich beantrage hiermit die Aufnahme in die <strong>WirMarkt Supermarkt Hamburg eG i.G.</strong>. Ich möchte mich mit insgesamt
             <span style="display: inline-block; width: 20mm; border-bottom: 2px solid black; text-align: center;">{{ owner.num_shares }}</span>
-            Anteil(en) an der Genossenschaft beteiligen. Ich verpflichte mich, die nach Satzung und Gesetz vorgesehenen Zahlungen
+            Anteil(en) an der <em>Vorgenossenschaft</em> beteiligen. Ich verpflichte mich, die nach Satzung und Gesetz vorgesehenen Zahlungen
             in Höhe von <strong>100,- € je Geschäftsanteil</strong> plus einem Eintrittsgeld in Höhe von 10,- € zu leisten, das der Deckung von
             Verwaltungskosten dient. Insgesamt verpflichte ich mich daher,
             <span style="display: inline-block; width: 20mm; border-bottom: 2px solid black; text-align: center;">
             {{ owner.get_initial_amount|floatformat:0 }}
             </span>€
             zu leisten. Die Satzung der
-            <strong>WirMarkt Supermarkt Hamburg eG</strong> ist mir (entweder digital oder in gedruckter Form) ausgehändigt worden kann hier eingesehen werden:
+            <strong>WirMarkt Supermarkt Hamburg eG i.G.</strong> ist mir (entweder digital oder in gedruckter Form) ausgehändigt worden kann hier eingesehen werden:
             <a href="https://wirmarkt.de/unsere-genossenschaft/">https://wirmarkt.de/unsere-genossenschaft/</a>
         </div>
     </div>
@@ -131,7 +132,7 @@
             {% endif %}
         </div>
         <div style="flex: 1">
-            Ich bin Mitglied der <strong>WirMarkt Supermarkt Hamburg eG</strong> und möchte mich mit
+            Ich bin Mitglied der <strong>WirMarkt Supermarkt Hamburg eG i.G.</strong> und möchte mich mit
             <span style="display: inline-block; width: 10mm; border-bottom: 2px solid black; text-align: center;">
                 {{ num_additional_shares }}
             </span>
@@ -187,23 +188,23 @@
             (Weiteres, z.Bsp. Ratenzahlung, wenn möglich mit Angabe der Zahlungsintervalle)
         </div>
     </div>
-    <div style="display: flex; flex-direction: row; margin-top: 5mm;">
-        <div style="margin-right: 8mm; width: 5mm;">
-            <span class="material-icons">check_box_outline_blank</span>
-            {% if owner %}
-            <span style="position: absolute; left: 2mm;" class="material-icons">close</span>
-            {% endif %}
-        </div>
-        <div style="flex: 1">
-            Ich werde meine (Rest-)Zahlungen per Überweisung leisten und auf folgendes Konto überweisen: <br />
-            <div style="margin-left: 10mm; line-height: 1.2; margin-top: 3mm;">
-                Kontoinhaber: <strong>WirMarkt Supermarkt Hamburg eG</strong><br />
-                IBAN: <span style="font-family: monospace">DEXX 1111 2222 3333 4444 00</span><br />
-                BIC: <span style="font-family: monospace">BIC1231234</span><br />
-                Betreff: Anteil und Eintrittsgeld {{ owner.first_name }} {{ owner.last_name }}
-            </div>
-        </div>
-    </div>
+{#    <div style="display: flex; flex-direction: row; margin-top: 5mm;">#}
+{#        <div style="margin-right: 8mm; width: 5mm;">#}
+{#            <span class="material-icons">check_box_outline_blank</span>#}
+{#            {% if owner %}#}
+{#            <span style="position: absolute; left: 2mm;" class="material-icons">close</span>#}
+{#            {% endif %}#}
+{#        </div>#}
+{#        <div style="flex: 1">#}
+{#            Ich werde meine (Rest-)Zahlungen per Überweisung leisten und auf folgendes Konto überweisen: <br />#}
+{#            <div style="margin-left: 10mm; line-height: 1.2; margin-top: 3mm;">#}
+{#                Kontoinhaber: <strong>WirMarkt Supermarkt Hamburg eG</strong><br />#}
+{#                IBAN: <span style="font-family: monospace">DEXX 1111 2222 3333 4444 00</span><br />#}
+{#                BIC: <span style="font-family: monospace">BIC1231234</span><br />#}
+{#                Betreff: Anteil und Eintrittsgeld {{ owner.first_name }} {{ owner.last_name }}#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
 
     <div style="border: 1px solid black; margin-top: 10mm; padding: 2mm; font-size: 7pt; line-height: 1.0rem;">
         <b>Datenschutzerklärung</b>

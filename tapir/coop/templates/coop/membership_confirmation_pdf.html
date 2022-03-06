@@ -18,7 +18,7 @@
 <!-- A DIN 5008 Letter has 2,7cm of top margin -->
 <div style="display: flex">
     <div style="margin-top: 17.7mm; margin-bottom: 30mm; margin-right: 30mm;">
-        <span style="font-size: 6pt;">WirMarkt Supermarkt Hamburg eG, Straße 1, 12345 Stadt</span>
+        <span style="font-size: 6pt;">WirMarkt Supermarkt Hamburg eG i.G., c/o Impact Hub Hamburg GmbH, Schomburgstr. 50, 22767 Hamburg</span>
         <div style="margin-top: 2mm;">
             {{ owner.get_info.get_display_name }}<br />
             {% if owner.get_info.street_2 %} {{ owner.get_info.street_2 }}<br />{% endif %}
@@ -38,12 +38,12 @@
 
     <p>Liebe*r {{ owner.get_info.get_display_name }},</p>
 
-    <p>herzlich Willkommen als offizielles Mitglied der <strong>WirMarkt Supermarkt Hamburg eG</strong>!</p>
+    <p>herzlich Willkommen als offizielles Mitglied der <strong>WirMarkt Supermarkt Hamburg eG i.G.</strong>!</p>
 
     <p>Mit dem Zeichnen von <b>{{ owner.get_active_share_ownerships.count }} Anteil(en)</b> hast du dich dafür entschieden,
         gemeinsam mit uns und vielen weiteren Genoss*innen das Ernährungssystem mitzugestalten!</p>
 
-    <p>Wir freuen uns sehr, dich als Mitglied der <strong>WirMarkt Supermarkt Hamburg eG</strong> begrüßen zu dürfen und bestätigen die Aufnahme in die
+    <p>Wir freuen uns sehr, dich als Mitglied der <strong>WirMarkt Supermarkt Hamburg eG i.G.</strong> begrüßen zu dürfen und bestätigen die Aufnahme in die
         Genossenschaft mit der <b>Mitgliedsnummer {{ owner.id }}</b>. Über diese Nummer wird auch die Ausübung deiner Rechte und
         Pflichten als Mitglied erfolgen. Bitte merke oder notiere dir deine Nummer deshalb.</p>
 
