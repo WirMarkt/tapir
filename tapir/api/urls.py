@@ -2,18 +2,13 @@ from django.urls import path, include
 from rest_framework import routers
 
 # Serializers define the API representation.
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
     TokenVerifyView,
 )
 
-from tapir.api.views import MemberInfoView, MemberContributionView
-
+from tapir.api.views import UpcomingShiftAttendanceView, ShareOwnerView, TapirUserView
 
 # Routers provide an easy way of automatically determining the URL conf.
 router = routers.DefaultRouter()
@@ -22,12 +17,13 @@ router = routers.DefaultRouter()
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path("", include(router.urls)),
-    path("member_info/", MemberInfoView.as_view(), name="get_member_info"),
     path(
-        "member_contribution/",
-        MemberContributionView.as_view(),
-        name="get_member_contribution",
+        "upcoming_shift_attendance/",
+        UpcomingShiftAttendanceView.as_view(),
+        name="get_upcoming_shift_attendance",
     ),
+    path("share_owner/", ShareOwnerView.as_view(), name="get_share_owner"),
+    path("tapir_user/", TapirUserView.as_view(), name="get_tapir_user"),
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),

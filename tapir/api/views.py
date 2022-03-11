@@ -3,42 +3,52 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from tapir.api.models import MemberContribution, MemberInfo
 from tapir.api.serializers import (
-    MemberInfoSerializer,
-    MemberContributionSerializer,
+    ShiftSerializer,
+    ShareOwnerSerializer,
+    TapirUserSerializer,
+    ShiftAttendanceSerializer,
 )
-from tapir.shifts.models import ShiftAttendance
+from tapir.coop.models import ShareOwner
+from tapir.shifts.models import ShiftAttendance, Shift
 
 
-class MemberInfoView(APIView):
+class UpcomingShiftAttendanceView(APIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
     def get(request):
-        member_info = MemberInfo(request.user)
-        serializer = MemberInfoSerializer(member_info)
+        upcoming_shift_attendance: ShiftAttendance = (
+            request.user.shift_user_data.get_upcoming_shift_attendances().first()
+        )
+
+        serializer = ShiftAttendanceSerializer(
+            upcoming_shift_attendance,
+            context={"request": request},
+        )
         return Response(serializer.data)
 
 
-class MemberContributionView(APIView):
+class ShareOwnerView(APIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
     def get(request):
+        share_owner: ShareOwner = None
         if hasattr(request.user, "share_owner"):
             share_owner = request.user.share_owner
-            next_shift_attendance: ShiftAttendance = (
-                request.user.shift_user_data.get_upcoming_shift_attendances().first()
-            )
-            serializer = MemberContributionSerializer(
-                MemberContribution(share_owner, next_shift_attendance),
-                context={"request": request},
-            )
-        else:
-            serializer = MemberContributionSerializer(
-                MemberContribution(None, None), context={"request": request}
-            )
+
+        serializer = ShareOwnerSerializer(share_owner, context={"request": request})
+        return Response(serializer.data)
+
+
+class TapirUserView(APIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @staticmethod
+    def get(request):
+        serializer = TapirUserSerializer(request.user, context={"request": request})
         return Response(serializer.data)

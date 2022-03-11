@@ -1,23 +1,49 @@
 from rest_framework import serializers
 
-
-class MemberContributionSerializer(serializers.Serializer):
-    status = serializers.CharField()
-    attended_welcome_session = serializers.BooleanField()
-    next_shift_name = serializers.CharField()
-    next_shift_attendance_state = serializers.IntegerField()
-    next_shift_id = serializers.CharField()
-    next_shift_url = serializers.CharField()
-    next_shift_start_time_epoch_ms = serializers.IntegerField()
-    next_shift_end_time_epoch_ms = serializers.IntegerField()
-    sepa_account_holder = serializers.CharField()
-    sepa_iban = serializers.CharField()
-    signed_sepa_mandate = serializers.BooleanField()
-    is_investing = serializers.BooleanField()
-    share_count = serializers.IntegerField()
+from tapir.accounts.models import TapirUser
+from tapir.coop.models import ShareOwner
+from tapir.shifts.models import Shift, ShiftUserData, ShiftAttendance
 
 
-class MemberInfoSerializer(serializers.Serializer):
-    email = serializers.CharField()
-    preferred_language = serializers.CharField()
-    can_shop = serializers.BooleanField()
+class ShiftSerializer(serializers.ModelSerializer):
+    absolute_url = serializers.CharField(source="get_absolute_url", read_only=True)
+
+    class Meta:
+        model = Shift
+        fields = "__all__"
+
+
+class ShiftAttendanceSerializer(serializers.ModelSerializer):
+    shift = ShiftSerializer(source="get_shift", read_only=True)
+
+    class Meta:
+        model = ShiftAttendance
+        fields = "__all__"
+
+
+class ShareOwnerSerializer(serializers.ModelSerializer):
+    external_id = serializers.CharField(source="get_external_id", read_only=True)
+    can_shop = serializers.BooleanField(read_only=True)
+    num_shares = serializers.IntegerField(read_only=True)
+    status = serializers.CharField(source="get_member_status", read_only=True)
+    absolute_url = serializers.CharField(source="get_absolute_url", read_only=True)
+
+    class Meta:
+        model = ShareOwner
+        fields = "__all__"
+
+
+class ShiftUserDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShiftUserData
+        fields = "__all__"
+
+
+class TapirUserSerializer(serializers.ModelSerializer):
+    share_owner = ShareOwnerSerializer(many=False, read_only=True)
+    shift_user_data = ShiftUserDataSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = TapirUser
+        exclude = ["password"]
+        depth = 1

@@ -186,6 +186,12 @@ class ShareOwner(models.Model):
     def is_active(self) -> bool:
         return self.get_member_status() == MemberStatus.ACTIVE
 
+    # generate ID for external identification, e.g. QR code for cashier
+    def get_external_id(self):
+        import hashlib
+
+        return hashlib.md5(self.get_info().username.encode())
+
 
 class MemberStatus:
     SOLD = "sold"

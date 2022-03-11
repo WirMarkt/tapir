@@ -864,6 +864,10 @@ class ShiftAttendance(models.Model):
         self.account_entry = entry
         self.save()
 
+    # helper function for less boilerplate in serialization
+    def get_shift(self):
+        return self.slot.shift
+
 
 @receiver(pre_save, sender=ShiftAttendance)
 def on_change(sender, instance: ShiftAttendance, **kwargs):
