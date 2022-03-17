@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 from datetime import timedelta
+from decimal import Decimal
 from pathlib import Path
 
 import celery.schedules
@@ -278,3 +279,7 @@ if ENABLE_API:
         "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
         "REFRESH_TOKEN_LIFETIME": timedelta(weeks=12),
     }
+
+
+COOP_SHARE_PRICE = Decimal(100)
+COOP_ENTRY_AMOUNT = Decimal(0)

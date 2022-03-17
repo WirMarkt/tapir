@@ -425,11 +425,11 @@ msgstr "An Willkommenstreffen teilgenommen"
 #: coop/templates/coop/draftuser_detail.html:117
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:154
 msgid "Paid Entrance Fee"
-msgstr ""
+msgstr "Hat Eintrittsgeld bezahlt"
 
 #: coop/models.py:77
-msgid "Is willing to gift a share"
-msgstr ""
+msgid "Is willing to donate a share"
+msgstr "Bereit eine Mitgliedschaft zu spenden"
 
 #: coop/models.py:127
 msgid "Cannot be a company and have a Tapir account"
@@ -461,8 +461,7 @@ msgstr ""
 #: coop/models.py:253
 #, python-brace-format
 msgid ""
-"Amount paid for a share can't more than {COOP_SHARE_PRICE} (the price of a "
-"share)"
+"Amount paid for a share can't be more than EUR {COOP_SHARE_PRICE} (the price of a share)"
 msgstr ""
 
 #: coop/models.py:282
@@ -1040,7 +1039,7 @@ msgid "Add Share"
 msgstr "Anteil hinzufügen"
 
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:164
-msgid "Willing to gift a share"
+msgid "Willing to donate a share"
 msgstr "Bereit eine Mitgliedschaft zu spenden"
 
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:174

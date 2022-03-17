@@ -1,9 +1,11 @@
 {% load static %}
 {% load django_bootstrap5 %}
 {% load accounts %}
+{% load i18n %}
 
 <!DOCTYPE html>
-<html lang="en">
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <title>Beteiligungserklärung {{ owner.first_name }} {{ owner.last_name }}</title>
@@ -112,12 +114,16 @@
         <div style="flex: 1">
             Ich beantrage hiermit die Aufnahme in die <strong>WirMarkt Supermarkt Hamburg eG i.G.</strong>. Ich möchte mich mit insgesamt
             <span style="display: inline-block; width: 20mm; border-bottom: 2px solid black; text-align: center;">{{ owner.num_shares }}</span>
-            Anteil(en) an der <em>Vorgenossenschaft</em> beteiligen. Ich verpflichte mich, die nach Satzung und Gesetz vorgesehenen Zahlungen
-            in Höhe von <strong>100,- € je Geschäftsanteil</strong> plus einem Eintrittsgeld in Höhe von 10,- € zu leisten, das der Deckung von
-            Verwaltungskosten dient. Insgesamt verpflichte ich mich daher,
+            Anteil(en) an der (Vor-)Genossenschaft beteiligen. Ich verpflichte mich, die nach Satzung und Gesetz vorgesehenen Zahlungen
+            in Höhe von <strong>{{ share_price|floatformat:2 }} Euro je Geschäftsanteil</strong> zu leisten.
+            {% if entry_amount > 0 %}
+                Hinzu kommt das Eintrittsgeld in Höhe von {{ entry_amount|floatformat:2 }} Euro zu leisten, das der Deckung von
+                Verwaltungskosten dient
+            {% endif %}
+            Insgesamt verpflichte ich mich daher,
             <span style="display: inline-block; width: 20mm; border-bottom: 2px solid black; text-align: center;">
-            {{ owner.get_initial_amount|floatformat:0 }}
-            </span>€
+            {{ owner.get_initial_amount|floatformat:2 }}
+            </span>Euro
             zu leisten. Die Satzung der
             <strong>WirMarkt Supermarkt Hamburg eG i.G.</strong> ist mir (entweder digital oder in gedruckter Form) ausgehändigt worden kann hier eingesehen werden:
             <a href="https://wirmarkt.de/unsere-genossenschaft/">https://wirmarkt.de/unsere-genossenschaft/</a>
@@ -136,11 +142,11 @@
             <span style="display: inline-block; width: 10mm; border-bottom: 2px solid black; text-align: center;">
                 {{ num_additional_shares }}
             </span>
-            weiteren Anteilen an der Genossenschaft beteiligen. Ich verpflichte mich, die nach Satzung und Gesetz
-            vorgesehenen Zahlungen in Höhe von 100,- € je Geschäftsanteil zu leisten. Zusammen mit dem Pflichtanteil
+            weiteren Anteilen an der (Vor-)Genossenschaft beteiligen. Ich verpflichte mich, die nach Satzung und Gesetz
+            vorgesehenen Zahlungen in Höhe von {{ share_price|floatformat:2 }} Euro je Geschäftsanteil zu leisten. Zusammen mit dem Pflichtanteil
             verpflichte ich mich daher, insgesamt
             <span style="display: inline-block; width: 10mm; border-bottom: 2px solid black; text-align: center;"></span>
-            € zu leisten.
+            Euro zu leisten.
         </div>
     </div>
 
@@ -166,7 +172,7 @@
             {% endif %}
         </div>
         <div style="flex: 1">
-            Ich nehme zur Kenntnis, dass die Satzung eine Kündigungsfrist von <strong>3 Jahren zum Ende des Geschäftsjahres</strong>
+            Ich nehme zur Kenntnis, dass die Satzung eine Kündigungsfrist von <strong>zwei Jahren zum Ende des Geschäftsjahres</strong>
             bestimmt. Die lange Laufzeit dient zur finanziellen Stabilität und ist ein wesentlicher Kern des
             Genossenschaftsprinzips, das auf langfristige Ziele ausgerichtet ist. Eine Übertragung von Geschäftsanteilen
             ist auch vorher bereits möglich und in der Satzung geregelt.
@@ -208,8 +214,8 @@
 
     <div style="border: 1px solid black; margin-top: 10mm; padding: 2mm; font-size: 7pt; line-height: 1.0rem;">
         <b>Datenschutzerklärung</b>
-        Verantwortlich für die Datenverarbeitung ist die <strong>WirMarkt Supermarkt Hamburg eG und Anschrift</strong>.
-        Erreichbar unter <a href="mailto:contact">contact-e-mail</a>. Der Name, die Anschrift und das Geburtsdatum werden für die
+        Verantwortlich für die Datenverarbeitung ist die <strong>WirMarkt Supermarkt Hamburg eG i.G., c/o Impact Hub Hamburg GmbH, Schomburgstr. 50, 22767 Hamburg</strong>.
+        Erreichbar unter <a href="mailto:office@wirmarkt.de">office@wirmarkt.de</a>. Der Name, die Anschrift und das Geburtsdatum werden für die
         Mitgliederliste der Genossenschaft benötigt (Art. 6 Absatz 1 c DS-GVO i.V.m. § 30 Absatz 2 Satz 1 Nr.1 GenG).
         Über die Adresse oder die E-Mail-Adresse werden Sie von der Genossenschaft zu Versammlungen eingeladen (Art. 6
         Absatz 1c DS-GVO i.V.m § 46 Absatz 1 Satz 1 GenG i.V.m. § 6 Nr.4 GenG) und im Rahmen der Mitgliedschaft über
