@@ -190,7 +190,10 @@ class ShareOwner(models.Model):
     def get_external_id(self):
         import hashlib
 
-        return hashlib.md5(self.get_info().username.encode())
+        if self.user:
+            return hashlib.md5(self.get_info().username.encode()).hexdigest()
+        else:
+            return None
 
 
 class MemberStatus:

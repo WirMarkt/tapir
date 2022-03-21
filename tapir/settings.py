@@ -72,6 +72,8 @@ if ENABLE_API:
     INSTALLED_APPS.append("rest_framework")
     INSTALLED_APPS.append("rest_framework_simplejwt")
     INSTALLED_APPS.append("tapir.api")
+
+if DEBUG and ENABLE_API:
     INSTALLED_APPS.append("corsheaders")
 
 MIDDLEWARE = [
@@ -89,15 +91,15 @@ MIDDLEWARE = [
 if ENABLE_SILK_PROFILING:
     MIDDLEWARE = ["silk.middleware.SilkyMiddleware"] + MIDDLEWARE
 
-if ENABLE_API:
+if DEBUG and ENABLE_API:
     MIDDLEWARE = ["corsheaders.middleware.CorsMiddleware"] + MIDDLEWARE
 
-CORS_ORIGIN_ALLOW_ALL = False
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^http://localhost.*$",
-    r"^http://127.0.0.1.*$",
-]
-CORS_URLS_REGEX = r"^/api/.*$"
+    CORS_ORIGIN_ALLOW_ALL = False
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^http://localhost.*$",
+        r"^http://127.0.0.1.*$",
+    ]
+    CORS_URLS_REGEX = r"^/api/.*$"
 
 ROOT_URLCONF = "tapir.urls"
 

@@ -2,22 +2,30 @@ from rest_framework import serializers
 
 from tapir.accounts.models import TapirUser
 from tapir.coop.models import ShareOwner
-from tapir.shifts.models import Shift, ShiftUserData, ShiftAttendance
+from tapir.shifts.models import (
+    Shift,
+    ShiftUserData,
+    ShiftAttendance,
+    SHIFT_USER_CAPABILITY_CHOICES,
+)
+
+
+class ShiftAttendanceSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(source="user.id", read_only=True)
+
+    class Meta:
+        model = ShiftAttendance
+        fields = "__all__"
 
 
 class ShiftSerializer(serializers.ModelSerializer):
     absolute_url = serializers.CharField(source="get_absolute_url", read_only=True)
+    attendances = ShiftAttendanceSerializer(
+        source="get_attendances", read_only=True, many=True
+    )
 
     class Meta:
         model = Shift
-        fields = "__all__"
-
-
-class ShiftAttendanceSerializer(serializers.ModelSerializer):
-    shift = ShiftSerializer(source="get_shift", read_only=True)
-
-    class Meta:
-        model = ShiftAttendance
         fields = "__all__"
 
 
@@ -47,3 +55,20 @@ class TapirUserSerializer(serializers.ModelSerializer):
         model = TapirUser
         exclude = ["password"]
         depth = 1
+
+
+class StringListField(serializers.ListField):
+    child = serializers.CharField()
+
+
+class ShiftUserDataSerializer(serializers.ModelSerializer):
+    capabilities = StringListField()
+    known_capabilities = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ShiftUserData
+        fields = ["capabilities", "known_capabilities"]
+
+    @staticmethod
+    def get_known_capabilities(obj):
+        return SHIFT_USER_CAPABILITY_CHOICES.keys()
