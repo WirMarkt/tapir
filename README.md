@@ -121,7 +121,6 @@ Here are some quick one-liners for key management:
 # Create a new CA - only the first time. The public key in the cer file is distributed to the webserver, the private key is to be kept secret!
 openssl req -newkey rsa:4096 -keyform PEM -keyout members.supercoop.de.key -x509 -days 3650 -outform PEM -nodes -out members.supercoop.de.cer -subj="/C=DE/O=SuperCoop Berlin eG/CN=members.supercoop.de"
 
-
 # Create a new key
 export CERT_HOSTNAME=welcome-desk-1
 openssl genrsa -out $CERT_HOSTNAME.members.supercoop.de.key 4096
@@ -139,3 +138,7 @@ rm $CERT_HOSTNAME.members.supercoop.de.key $CERT_HOSTNAME.members.supercoop.de.c
 We use a slightly customized version of the boostrap buttons, typically using those HTML classes: `btn tapir-btn btn-[BOOTSTRAP COLOR]`.  
 Each button should have an icon, we use material-icons.  
 We use outlined buttons for links that have no consequences (for example, going to an edit page), and filled buttons when there are consequences (for example, a save button, or sending an email). 
+
+# Troubleshooting
+
+* On macOS, you might have to install Postgresql to get `psycopg2` working. Use `brew install postgresql` for that.
