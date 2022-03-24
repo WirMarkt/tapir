@@ -30,7 +30,6 @@ class ShiftSerializer(serializers.ModelSerializer):
 
 
 class ShareOwnerSerializer(serializers.ModelSerializer):
-    external_id = serializers.CharField(source="get_external_id", read_only=True)
     can_shop = serializers.BooleanField(read_only=True)
     num_shares = serializers.IntegerField(read_only=True)
     status = serializers.CharField(source="get_member_status", read_only=True)

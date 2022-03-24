@@ -27,7 +27,7 @@ djangorestframework = "^3.13.1"
 djangorestframework-simplejwt = "^5.1.0"
 django-cors-headers = "3.11.0"
 celery = "^5.2.3"
-redis = "^4.1.4"
+redis = "^4.2.0"
 ipython = "^8.1.1"
 
 [tool.poetry.dev-dependencies]

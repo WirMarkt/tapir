@@ -328,9 +328,6 @@ class ShareOwnerTable(django_tables2.Table):
     preferred_language = django_tables2.Column(
         empty_values=(), orderable=False, visible=False
     )
-    external_id = django_tables2.Column(
-        empty_values=(), verbose_name="External ID", orderable=False
-    )
 
     @staticmethod
     def render_display_name(value, record: ShareOwner):
@@ -375,14 +372,6 @@ class ShareOwnerTable(django_tables2.Table):
     @staticmethod
     def value_preferred_language(value, record: ShareOwner):
         return record.get_info().preferred_language
-
-    @staticmethod
-    def value_external_id(value, record: ShareOwner):
-        return record.get_external_id()
-
-    @staticmethod
-    def render_external_id(value, record: ShareOwner):
-        return record.get_external_id()
 
 
 class ShareOwnerFilter(django_filters.FilterSet):
@@ -566,7 +555,6 @@ class ShareOwnerExportMailchimpView(
                 "Last Name",
                 "Address",
                 "Tags",
-                "External ID",
             ]
         )
         for owner in context["object_list"]:
