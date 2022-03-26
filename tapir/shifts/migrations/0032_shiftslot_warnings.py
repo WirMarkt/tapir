@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                         ),
                         (
                             "must_not_be_scared_of_heights",
-                            "I understand that I may need to work high, for example up a ladder. I do not suffer from fear of heigts.",
+                            "I understand that I may need to work high, for example up a ladder. I do not suffer from fear of heights.",
                         ),
                     ],
                     max_length=128,

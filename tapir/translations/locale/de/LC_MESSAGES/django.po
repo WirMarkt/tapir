@@ -21,7 +21,7 @@ msgstr ""
 #: accounts/models.py:137 accounts/templates/accounts/user_detail.html:35
 #: coop/templates/coop/draftuser_detail.html:18
 msgid "Username"
-msgstr "Nutzer*innenname"
+msgstr "Nutzer:innenname"
 
 #: accounts/models.py:141
 msgid "Required. 150 characters or fewer. Letters, digits and ./-/_ only."
@@ -31,7 +31,7 @@ msgstr ""
 
 #: accounts/models.py:145
 msgid "A user with that username already exists."
-msgstr "Es gibt bereits eine Nutzer*in mit diesem Namen."
+msgstr "Es gibt bereits eine Nutzer:in mit diesem Namen."
 
 #: accounts/models.py:149 accounts/templates/accounts/user_detail.html:43
 #: coop/models.py:50 coop/models.py:267
@@ -92,7 +92,7 @@ msgid ""
 "    </p>\n"
 msgstr ""
 "\n"
-"<p> Liebe*r %(user_display_name)s,</p>\n"
+"<p> Liebe:r %(user_display_name)s,</p>\n"
 "<p>soeben haben wir für dich ein Konto in unserem %(coop_name)s "
 "Mitgliedersystem angelegt. Hier kannst du deine kommenden Schichten "
 "einsehen, dir nach Lust und Laune eine zusätzliche Schicht buchen oder eine "
@@ -140,7 +140,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"<p>Dein Nutzer*innenname ist *%(username)s* . Um dein Konto nutzen zu "
+"<p>Dein Nutzer:innenname ist :%(username)s: . Um dein Konto nutzen zu "
 "können, musst du zuerst ein Passwort festlegen: <a href=\"%(site_url)s"
 "%(password_reset_confirm_url)s\">Klick hier um dein Passwort zu setzen.</a></"
 "p>\n"
@@ -231,7 +231,7 @@ msgstr "Passwort ändern"
 #: accounts/templates/accounts/user_form.html:11
 #: shifts/templates/shifts/shiftuserdata_form.html:11
 msgid "Users"
-msgstr "Nutzer*innen"
+msgstr "Nutzer:innen"
 
 #: accounts/templates/accounts/user_form.html:28
 #: accounts/templates/registration/password_update.html:17
@@ -381,7 +381,7 @@ msgstr ""
 
 #: accounts/views.py:88
 msgid "Account welcome email sent."
-msgstr "Willkommens-E-Mail für Nutzer'*innenkonto gesendet."
+msgstr "Willkommens-E-Mail für Nutzer:innenkonto gesendet."
 
 #: coop/forms.py:69 coop/views/shareowner.py:232
 #, python-format
@@ -531,7 +531,7 @@ msgstr ""
 
 #: coop/templates/coop/draftuser_detail.html:11
 msgid "Applicant"
-msgstr "Bewerber*in"
+msgstr "Bewerber:in"
 
 #: coop/templates/coop/draftuser_detail.html:50
 msgid "Member Type"
@@ -558,7 +558,7 @@ msgstr "Mitglied anlegen"
 #: coop/templates/coop/draftuser_form.html:21
 #: coop/templates/coop/draftuser_register_form.html:35
 msgid "Create applicant"
-msgstr "Bewerber*in anlegen"
+msgstr "Bewerber:in anlegen"
 
 #: coop/templates/coop/draftuser_list.html:8
 #: coop/templates/coop/draftuser_register_form.default.html:18
@@ -566,11 +566,11 @@ msgstr "Bewerber*in anlegen"
 #: coop/templates/coop/statistics.html:140 core/templates/core/base.html:56
 #: core/templatetags/core.py:31
 msgid "Applicants"
-msgstr "Bewerber*innen"
+msgstr "Bewerber:innen"
 
 #: coop/templates/coop/draftuser_list.html:18
 msgid "List of applicants"
-msgstr "Liste der Bewerber*innen"
+msgstr "Liste der Bewerber:innen"
 
 #: coop/templates/coop/draftuser_list.html:24
 msgid "Entrance Fee"
@@ -587,7 +587,7 @@ msgstr "Bezahlt"
 
 #: coop/templates/coop/draftuser_register_form.default.html:35
 msgid "Create Applicant"
-msgstr "Bewerber*in anlegen"
+msgstr "Bewerber:in anlegen"
 
 #: coop/templates/coop/draftuser_register_form.default.html:37
 #: coop/templates/coop/draftuser_register_form.html:37
@@ -898,7 +898,7 @@ msgstr ""
 
 #: coop/templates/coop/shareowner_detail.html:18
 msgid "Go to user page"
-msgstr "Zur Nutzer*innen-Seite"
+msgstr "Zur Nutzer:innen-Seite"
 
 #: coop/templates/coop/shareowner_form.html:12
 msgid "Edit share owner"
@@ -1048,7 +1048,7 @@ msgstr "Mitgliedsbestätigung per Mail senden"
 
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:180
 msgid "User is not a cooperative member."
-msgstr "Benutzer*in ist kein Genossenschaftsmitglied."
+msgstr "Benutzer:in ist kein Genossenschaftsmitglied."
 
 #: coop/templates/coop/welcome_desk_search.html:18
 #: core/templates/core/base.html:46 core/templatetags/core.py:53
@@ -1246,11 +1246,11 @@ msgstr "Protokoll"
 
 #: log/templates/log/log_entry_list_tag.html:12
 msgid "List of log entries for this user"
-msgstr ""
+msgstr "Liste der Protokolleinträge für diese:n Benutzer:in"
 
 #: log/templates/log/log_entry_list_tag.html:40
 msgid "Notes about this user"
-msgstr "Notizen über diese*n Benutzer*in"
+msgstr "Notizen über diese:n Benutzer:in"
 
 #: log/templates/log/log_entry_list_tag.html:43
 msgid "Add Note"
@@ -1262,7 +1262,7 @@ msgid ""
 "user should get registered to the shift"
 msgstr ""
 "Ich habe die Warnung über die fehlende Befähigung gelesen und bestätige, "
-"dass Benutzer*in für die Schicht registriert werden sollte"
+"dass Benutzer:in für die Schicht registriert werden sollte"
 
 #: shifts/forms.py:73
 #, python-brace-format
@@ -1270,13 +1270,13 @@ msgid ""
 "The selected user is missing the required qualification for this shift : "
 "{missing_capabilities}"
 msgstr ""
-"Ausgewählte Nutzer*in hat nicht die erforderliche Befähigung für diese "
+"Ausgewählte Nutzer:in hat nicht die erforderliche Befähigung für diese "
 "Schicht: {missing_capabilities}"
 
 #: shifts/forms.py:107
 msgid "This user is already registered to another slot in this ABCD shift."
 msgstr ""
-"Diese*r Nutzer*in ist bereits für einen anderen Platz in dieser ABCD-Schicht "
+"Diese:r Nutzer:in ist bereits für einen anderen Platz in dieser ABCD-Schicht "
 "registriert."
 
 #: shifts/forms.py:143
@@ -1286,7 +1286,7 @@ msgstr ""
 #: shifts/forms.py:147
 msgid "This user is already registered to another slot in this shift."
 msgstr ""
-"Diese*r Nutzer*in ist bereits für einen anderen Platz in dieser Schicht "
+"Diese:r Nutzer:in ist bereits für einen anderen Platz in dieser Schicht "
 "registriert."
 
 #: shifts/forms.py:158
@@ -1300,7 +1300,7 @@ msgid ""
 "exemption should be created"
 msgstr ""
 "Ich habe die Warnung über die fehlende Befähigung gelesen und bestätige, "
-"dass Benutzer*in für die Schicht registriert werden sollte"
+"dass Benutzer:in für die Schicht registriert werden sollte"
 
 #: shifts/forms.py:206
 msgid ""
@@ -1327,7 +1327,7 @@ msgstr ""
 
 #: shifts/models.py:34
 msgid "Teamleader"
-msgstr "Teamleiter*in"
+msgstr "Teamleiter:in"
 
 #: shifts/models.py:35
 msgid "Cashier"
@@ -1354,6 +1354,7 @@ msgid ""
 "I understand that all working groups help the Warenannahme & Lagerhaltung "
 "working group until the shop opens."
 msgstr ""
+"Ich gehe davon aus, dass alle Arbeitsgruppen die Arbeitsgruppe Warenannahme & Lagerhaltung bis zur Eröffnung des Ladens unterstützen."
 
 #: shifts/models.py:56
 msgid ""
@@ -1369,13 +1370,15 @@ msgstr ""
 
 #: shifts/models.py:62
 msgid "I understand that I may need to carry heavy weights for this shift."
-msgstr ""
+msgstr "Mir ist klar, dass ich bei dieser Schicht möglicherweise schwere Gewichte tragen muss."
 
 #: shifts/models.py:65
 msgid ""
 "I understand that I may need to work high, for example up a ladder. I do not "
-"suffer from fear of heigts."
+"suffer from fear of heights."
 msgstr ""
+"Ich verstehe, dass ich möglicherweise in großer Höhe arbeiten muss, zum Beispiel auf einer Leiter. "
+"Ich leide nicht unter Höhenangst."
 
 #: shifts/models.py:111
 msgid "Monday"
@@ -1552,11 +1555,11 @@ msgstr ""
 msgid ""
 "In case you can't attend the shift, contact the team leader as soon as "
 "possible."
-msgstr ""
+msgstr "Falls du nicht an der Schicht teilnehmen kannst, kontaktiere bitte den:die Teamleiter:in so schnell wie möglich."
 
 #: shifts/templates/shifts/email/stand_in_found.html:7
 msgid "Stand-in found"
-msgstr ""
+msgstr "Ersatz gefunden"
 
 #: shifts/templates/shifts/email/stand_in_found.html:10
 #, python-format
@@ -1613,7 +1616,7 @@ msgstr "Ändere den Schichtstatus zu"
 
 #: shifts/templates/shifts/log/update_shift_user_data_log_entry.html:3
 msgid "Update Shift User Data"
-msgstr "Nutzer*innendaten der Schicht aktualisieren"
+msgstr "Nutzer:innendaten der Schicht aktualisieren"
 
 #: shifts/templates/shifts/register_user_to_shift_slot.html:15
 msgid "Register for shift slot"
@@ -1734,7 +1737,7 @@ msgstr "Details"
 #: shifts/templates/shifts/shift_detail.html:59
 #: shifts/templates/shifts/shift_template_detail.html:33
 msgid "Registered user"
-msgstr "Angemeldete*r Nutzer*in"
+msgstr "Angemeldete:r Nutzer:in"
 
 #: shifts/templates/shifts/shift_detail.html:60
 msgid "Attendance"
@@ -1955,7 +1958,7 @@ msgstr "Liste der Schicht-Befreiungen"
 
 #: shifts/templates/shifts/shiftexemption_list.html:19
 msgid "User"
-msgstr "Benutzer*in"
+msgstr "Benutzer:in"
 
 #: shifts/templates/shifts/shiftexemption_list.html:20
 msgid "Start date"
@@ -1971,7 +1974,7 @@ msgstr "Ist aktiv"
 
 #: shifts/templates/shifts/shiftuserdata_form.html:16
 msgid "Edit user shift data"
-msgstr "Bearbeite Nutzer*in-Schichtdaten"
+msgstr "Bearbeite Nutzer:in-Schichtdaten"
 
 #: shifts/templates/shifts/statistics.html:11
 msgid "Statistics on shifts"
