@@ -328,6 +328,8 @@ class ShareOwnerTable(django_tables2.Table):
     preferred_language = django_tables2.Column(
         empty_values=(), orderable=False, visible=False
     )
+    num_shares = django_tables2.Column(empty_values=(), orderable=False, visible=False)
+    join_date = django_tables2.Column(empty_values=(), orderable=False, visible=False)
 
     @staticmethod
     def render_display_name(value, record: ShareOwner):
@@ -372,6 +374,15 @@ class ShareOwnerTable(django_tables2.Table):
     @staticmethod
     def value_preferred_language(value, record: ShareOwner):
         return record.get_info().preferred_language
+
+    @staticmethod
+    def value_num_shares(value, record: ShareOwner):
+        return record.num_shares()
+
+    @staticmethod
+    def value_join_date(value, record: ShareOwner):
+        ownership = record.get_oldest_active_share_ownership()
+        return ownership.start_date if ownership is not None else ""
 
 
 class ShareOwnerFilter(django_filters.FilterSet):
