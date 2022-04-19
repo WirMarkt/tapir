@@ -194,23 +194,23 @@
             (Weiteres, z.Bsp. Ratenzahlung, wenn möglich mit Angabe der Zahlungsintervalle)
         </div>
     </div>
-{#    <div style="display: flex; flex-direction: row; margin-top: 5mm;">#}
-{#        <div style="margin-right: 8mm; width: 5mm;">#}
-{#            <span class="material-icons">check_box_outline_blank</span>#}
-{#            {% if owner %}#}
-{#            <span style="position: absolute; left: 2mm;" class="material-icons">close</span>#}
-{#            {% endif %}#}
-{#        </div>#}
-{#        <div style="flex: 1">#}
-{#            Ich werde meine (Rest-)Zahlungen per Überweisung leisten und auf folgendes Konto überweisen: <br />#}
-{#            <div style="margin-left: 10mm; line-height: 1.2; margin-top: 3mm;">#}
-{#                Kontoinhaber: <strong>WirMarkt Supermarkt Hamburg eG</strong><br />#}
-{#                IBAN: <span style="font-family: monospace">DEXX 1111 2222 3333 4444 00</span><br />#}
-{#                BIC: <span style="font-family: monospace">BIC1231234</span><br />#}
-{#                Betreff: Anteil und Eintrittsgeld {{ owner.first_name }} {{ owner.last_name }}#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
+    <div style="display: flex; flex-direction: row; margin-top: 5mm;">
+        <div style="margin-right: 8mm; width: 5mm;">
+            <span class="material-icons">check_box_outline_blank</span>
+            {% if owner %}
+            <span style="position: absolute; left: 2mm;" class="material-icons">close</span>
+            {% endif %}
+        </div>
+        <div style="flex: 1">
+            Ich werde meine (Rest-)Zahlungen per Überweisung leisten und auf folgendes Konto überweisen: <br />
+            <div style="margin-left: 10mm; line-height: 1.2; margin-top: 3mm;">
+                Kontoinhaber: <strong>WirMarkt Supermarkt Hamburg eG i.G.</strong><br />
+                IBAN: <span style="font-family: monospace">DE28 4306 0967 1280 1809 00</span><br />
+                BIC: <span style="font-family: monospace">GENODEM1GLS</span><br />
+                Betreff: Anteil {{ owner.first_name }} {{ owner.last_name }}
+            </div>
+        </div>
+    </div>
 
     <div style="border: 1px solid black; margin-top: 10mm; padding: 2mm; font-size: 7pt; line-height: 1.0rem;">
         <b>Datenschutzerklärung</b>
