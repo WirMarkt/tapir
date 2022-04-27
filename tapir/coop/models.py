@@ -239,8 +239,9 @@ class ShareOwnership(DurationModelMixin, models.Model):
         if self.amount_paid > COOP_SHARE_PRICE:
             raise ValidationError(
                 _(
-                    f"Amount paid for a share can't be more than {COOP_SHARE_PRICE} (the price of a share)"
+                    "Amount paid for a share can't be more than %(share_price)s (the price of a share)"
                 )
+                % {"share_price": COOP_SHARE_PRICE}
             )
 
 
