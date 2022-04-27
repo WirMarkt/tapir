@@ -307,6 +307,8 @@ class ShareOwnerTable(django_tables2.Table):
         sequence = (
             "id",
             "display_name",
+            "first_name",
+            "last_name",
             "status",
             "attended_welcome_session",
             "ratenzahlung",
@@ -315,8 +317,10 @@ class ShareOwnerTable(django_tables2.Table):
         order_by = "id"
 
     display_name = django_tables2.Column(
-        empty_values=(), verbose_name="Name", orderable=False
+        empty_values=(), verbose_name="Name", orderable=False, exclude_from_export=True
     )
+    first_name = django_tables2.Column(empty_values=(), orderable=False, visible=False)
+    last_name = django_tables2.Column(empty_values=(), orderable=False, visible=False)
     status = django_tables2.Column(empty_values=(), orderable=False)
     email = django_tables2.Column(empty_values=(), orderable=False, visible=False)
     phone_number = django_tables2.Column(
@@ -342,6 +346,14 @@ class ShareOwnerTable(django_tables2.Table):
     @staticmethod
     def value_display_name(value, record: ShareOwner):
         return record.get_info().get_display_name()
+
+    @staticmethod
+    def value_first_name(value, record: ShareOwner):
+        return record.get_info().first_name
+
+    @staticmethod
+    def value_last_name(value, record: ShareOwner):
+        return record.get_info().last_name
 
     @staticmethod
     def render_status(value, record: ShareOwner):
