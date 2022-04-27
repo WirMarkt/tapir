@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-27 14:40+0200\n"
+"POT-Creation-Date: 2022-04-27 16:29+0200\n"
 "PO-Revision-Date: 2021-11-21 17:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -170,14 +170,14 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"        <p>Mit deinem Benutzernamen <strong>%(username)s</strong> hast du Zugang "
-"zu folgenden Ressourcen:</p>\n"
+"        <p>Mit deinem Benutzernamen <strong>%(username)s</strong> hast du "
+"Zugang zu folgenden Ressourcen:</p>\n"
 "        <ul>\n"
 "            <li><a href=\"https://wirmarkt.de/app\" target=\"_blank"
 "\">WirMarkt Community und Mitglieder App</a></li>\n"
 "            <li><a href=\"https://rocketchat.wirmarkt.de\" target=\"_blank"
-"\">WirMarkt Rocket.Chat</a> (Chat-System für Kommunikation in den AGs und zwischen "
-"Mitgliedern)</li>\n"
+"\">WirMarkt Rocket.Chat</a> (Chat-System für Kommunikation in den AGs und "
+"zwischen Mitgliedern)</li>\n"
 "        </ul>\n"
 "    "
 
@@ -415,21 +415,24 @@ msgstr ""
 msgid "Account welcome email sent."
 msgstr "Willkommens-E-Mail für Nutzer:innenkonto gesendet."
 
-#: coop/forms.py:60 coop/models.py:271
+#: coop/forms.py:62 coop/models.py:271
 msgid "Number of Shares"
 msgstr "Anzahl Anteile"
 
-#: coop/forms.py:61
+#: coop/forms.py:65
+#, python-format
 msgid ""
-"Number of shares you would like to purchase. You need to purchase at least "
-"one share to become member of the cooperative. To support our cooperative "
-"even more, you may voluntarily purchase more shares."
+"Number of shares you would like to purchase. The price of one share is EUR "
+"%(share_price)s. You need to purchase at least one share to become member of "
+"the cooperative. To support our cooperative even more, you may voluntarily "
+"purchase more shares."
 msgstr ""
-"Anzahl der Anteile, die du kaufen möchtest. Um Mitglied der Genossenschaft "
-"zu werden, musst du mindestens einen Anteil kaufen. Um unsere Genossenschaft "
-"noch mehr zu unterstützen, kannst du freiwillig mehr Anteile kaufen."
+"Anzahl der Anteile, die du kaufen möchtest. Ein Anteil kostet "
+"%(share_price)s Euro. Um Mitglied der Genossenschaft zu werden, musst du "
+"mindestens einen Anteil kaufen. Um den Aufbau der Genossenschaft zu "
+"unterstützen, kannst du freiwillig mehr Anteile kaufen."
 
-#: coop/forms.py:76 coop/views/shareowner.py:231
+#: coop/forms.py:82 coop/views/shareowner.py:231
 #, python-format
 msgid "Welcome at %(organisation_name)s!"
 msgstr "Willkommen bei %(organisation_name)s!"
@@ -505,13 +508,12 @@ msgid "Amount paid for a share can't be negative"
 msgstr ""
 
 #: coop/models.py:242
-#, python-brace-format
 msgid ""
-"Amount paid for a share can't be more than {COOP_SHARE_PRICE} (the price of "
-"a share)"
+"Amount paid for a share can't be more than %(share_price)s (the price of a "
+"share)"
 msgstr ""
 "Der für einen Anteil gezahlte Betrag kann nicht höher sein als "
-"{COOP_SHARE_PRICE} (der Preis eines Anteils)"
+"%(share_price)s (der Preis eines Anteils)"
 
 #: coop/models.py:274
 msgid "Investing member"

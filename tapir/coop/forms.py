@@ -9,6 +9,7 @@ from tapir.coop.models import ShareOwnership, DraftUser, ShareOwner, FinancingCa
 from tapir.coop.pdfs import get_membership_agreement_pdf
 from tapir.settings import FROM_EMAIL_MEMBER_OFFICE
 from tapir.utils.forms import DateInput, TapirPhoneNumberField
+from tapir.settings import COOP_SHARE_PRICE
 
 
 class ShareOwnershipForm(forms.ModelForm):
@@ -61,10 +62,11 @@ class DraftUserRegisterForm(forms.ModelForm):
         label=_("Number of Shares"),
         min_value=1,
         help_text=_(
-            "Number of shares you would like to purchase. "
+            "Number of shares you would like to purchase. The price of one share is EUR %(share_price)s. "
             "You need to purchase at least one share to become member of the cooperative. "
             "To support our cooperative even more, you may voluntarily purchase more shares."
-        ),
+        )
+        % {"share_price": COOP_SHARE_PRICE},
     )
 
     def __init__(self, *args, **kwargs):
