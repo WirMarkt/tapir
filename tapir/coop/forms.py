@@ -57,6 +57,15 @@ class DraftUserForm(forms.ModelForm):
 
 class DraftUserRegisterForm(forms.ModelForm):
     phone_number = TapirPhoneNumberField()
+    num_shares = forms.IntegerField(
+        label=_("Number of Shares"),
+        min_value=1,
+        help_text=_(
+            "Number of shares you would like to purchase. "
+            "You need to purchase at least one share to become member of the cooperative. "
+            "To support our cooperative even more, you may voluntarily purchase more shares."
+        ),
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -72,8 +81,8 @@ class DraftUserRegisterForm(forms.ModelForm):
                 % {"organisation_name": settings.COOP_NAME},
                 body=render_to_string(
                     [
-                        "coop/email/membership_confirmation_welcome.html",
-                        "coop/email/membership_confirmation_welcome.default.html",
+                        "coop/email/membership_application_welcome.html",
+                        "coop/email/membership_application_welcome.default.html",
                     ],
                     {
                         "owner": draft_user,
@@ -108,6 +117,7 @@ class DraftUserRegisterForm(forms.ModelForm):
             "city",
             "country",
             "preferred_language",
+            "num_shares",
         ]
         required = [
             "first_name",
@@ -120,6 +130,7 @@ class DraftUserRegisterForm(forms.ModelForm):
             "city",
             "country",
             "preferred_language",
+            "num_shares",
         ]
         widgets = {"birthdate": DateInput()}
 

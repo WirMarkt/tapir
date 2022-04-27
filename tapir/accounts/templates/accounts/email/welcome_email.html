@@ -32,13 +32,22 @@
 
 {% url "password_reset_confirm" uidb64=uid token=token as password_reset_confirm_url %}
 {% url "password_reset" as password_reset_request_url %}
-<p>
+<div>
     {% blocktranslate with username=tapir_user.username %}
     <p>Your username is <strong>{{ username }}</strong>. In order to log in to your account, you first have to set a password: <a href="{{ site_url }}{{ password_reset_confirm_url }}">Click here to set your password</a></p>
     <p>This link is only valid for a few weeks. Should it expire, you can get a new one here : <a href="{{ site_url }}{{ password_reset_request_url }}">Click here to get a new link</a></p>
     {% endblocktranslate %}
-</p>
+</div>
 
+<div>
+    {% blocktranslate with username=tapir_user.username %}
+        <p>Using your username <strong>{{ username }}</strong>, you have access to several of our resources:</p>
+        <ul>
+            <li><a href="https://wirmarkt.de/app" target="_blank">WirMarkt Community and Membership App</a></li>
+            <li><a href="https://rocketchat.wirmarkt.de" target="_blank">WirMarkt Rocket.Chat</a> (chat system for communication across teams and between members)</li>
+        </ul>
+    {% endblocktranslate %}
+</div>
 
 <p>
     {% blocktranslate %}
