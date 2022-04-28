@@ -136,6 +136,16 @@ urlpatterns = [
         name="about",
     ),
     path(
+        "tools_chat",
+        views.ToolsChatView.as_view(),
+        name="tools_chat",
+    ),
+    path(
+        "tools_app",
+        views.ToolsAppView.as_view(),
+        name="tools_app",
+    ),
+    path(
         "matching_program",
         views.MatchingProgramListView.as_view(),
         name="matching_program_list",

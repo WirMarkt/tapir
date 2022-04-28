@@ -1,0 +1,57 @@
+{% extends "core/base.html" %}
+
+{% load django_bootstrap5 %}
+{% load i18n %}
+{% load static %}
+
+
+{% block content %}
+    <div class="container">
+
+        <div class="row">
+            <div class="offset-2 col-4">
+                <h1 class="display-3">{% translate "WirMarkt chat" %}</h1>
+
+                <p class="lead">
+                    {% blocktranslate %}
+                        We use a self-hosted, secure and versatile chat system called "Rocket.Chat". You can install it
+                        as a separate app on your smartphone or simply log in using your browser.
+                    {% endblocktranslate %}
+                </p>
+            </div>
+            <div class="col-4">
+                <img class="img-fluid" src="{% static "coop/images/rocketchat.png" %}"/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="offset-2 col-4">
+
+                <div class="card my-5">
+                    <h5 class="card-header">
+                        <span>{% translate "How it works" %}</span>
+                    </h5>
+                    <div class="card-body">
+                        <ul>
+                            <li><a href="https://rocketchat.wirmarkt.de"
+                                   target="_blank">{% translate "Open WirMarkt Rocket.Chat" %}</a></li>
+                            <li>{% translate "Log in using the same username and password as on this website" %}</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card my-5">
+                    <h5 class="card-header">
+                        <span>{% translate "Need help?" %}</span>
+                    </h5>
+                    <div class="card-body">
+                        {% blocktranslate %}
+                            Contact our <a href="mailto:office@wirmarkt.de">member office</a>.
+                        {% endblocktranslate %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

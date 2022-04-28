@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-27 16:29+0200\n"
+"POT-Creation-Date: 2022-04-28 14:26+0200\n"
 "PO-Revision-Date: 2021-11-21 17:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -34,41 +34,41 @@ msgid "A user with that username already exists."
 msgstr "Es gibt bereits eine Nutzer:in mit diesem Namen."
 
 #: accounts/models.py:149 accounts/templates/accounts/user_detail.html:43
-#: coop/models.py:45 coop/models.py:256
+#: coop/models.py:45 coop/models.py:257
 #: coop/templates/coop/draftuser_detail.html:26
 #: coop/templates/coop/shareowner_detail.html:43
 msgid "Phone number"
 msgstr "Telefonnummer"
 
 #: accounts/models.py:150 accounts/templates/accounts/user_detail.html:53
-#: coop/models.py:46 coop/models.py:257
+#: coop/models.py:46 coop/models.py:258
 #: coop/templates/coop/draftuser_detail.html:30
 #: coop/templates/coop/shareowner_detail.html:47
 msgid "Birthdate"
 msgstr "Geburtsdatum"
 
-#: accounts/models.py:151 coop/models.py:47 coop/models.py:258
+#: accounts/models.py:151 coop/models.py:47 coop/models.py:259
 msgid "Street and house number"
 msgstr "Straße und Hausnummer"
 
-#: accounts/models.py:152 coop/models.py:48 coop/models.py:259
+#: accounts/models.py:152 coop/models.py:48 coop/models.py:260
 msgid "Extra address line"
 msgstr "Adresszusatz"
 
-#: accounts/models.py:153 coop/models.py:49 coop/models.py:260
+#: accounts/models.py:153 coop/models.py:49 coop/models.py:261
 msgid "Postcode"
 msgstr "Postleitzahl"
 
-#: accounts/models.py:154 coop/models.py:50 coop/models.py:261
+#: accounts/models.py:154 coop/models.py:50 coop/models.py:262
 msgid "City"
 msgstr "Ort"
 
-#: accounts/models.py:155 coop/models.py:51 coop/models.py:262
+#: accounts/models.py:155 coop/models.py:51 coop/models.py:263
 msgid "Country"
 msgstr "Land"
 
 #: accounts/models.py:158 accounts/templates/accounts/user_detail.html:73
-#: coop/models.py:54 coop/models.py:265
+#: coop/models.py:54 coop/models.py:266
 #: coop/templates/coop/shareowner_detail.html:67
 msgid "Preferred Language"
 msgstr "Bevorzugte Sprache"
@@ -215,8 +215,8 @@ msgstr "Persönliche Daten"
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: accounts/templates/accounts/user_detail.html:31 coop/models.py:327
-#: coop/models.py:335 coop/templates/coop/draftuser_detail.html:14
+#: accounts/templates/accounts/user_detail.html:31 coop/models.py:328
+#: coop/models.py:336 coop/templates/coop/draftuser_detail.html:14
 #: coop/templates/coop/shareowner_detail.html:35
 msgid "Name"
 msgstr "Name"
@@ -415,7 +415,7 @@ msgstr ""
 msgid "Account welcome email sent."
 msgstr "Willkommens-E-Mail für Nutzer:innenkonto gesendet."
 
-#: coop/forms.py:62 coop/models.py:271
+#: coop/forms.py:62 coop/models.py:272
 msgid "Number of Shares"
 msgstr "Anzahl Anteile"
 
@@ -441,17 +441,17 @@ msgstr "Willkommen bei %(organisation_name)s!"
 msgid "Is company"
 msgstr "Ist eine Firma"
 
-#: coop/models.py:42 coop/models.py:253
+#: coop/models.py:42 coop/models.py:254
 #: coop/templates/coop/draftuser_list.html:20
 msgid "First name"
 msgstr "Vorname"
 
-#: coop/models.py:43 coop/models.py:254
+#: coop/models.py:43 coop/models.py:255
 #: coop/templates/coop/draftuser_list.html:21
 msgid "Last name"
 msgstr "Nachname"
 
-#: coop/models.py:44 coop/models.py:255
+#: coop/models.py:44 coop/models.py:256
 msgid "Email address"
 msgstr "E-Mail-Adresse"
 
@@ -459,18 +459,18 @@ msgstr "E-Mail-Adresse"
 msgid "Is investing member"
 msgstr "Ist investierendes Mitglied"
 
-#: coop/models.py:66 coop/models.py:286
+#: coop/models.py:66 coop/models.py:287
 #: coop/templates/coop/draftuser_detail.html:61
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:44
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:159
 msgid "Ratenzahlung"
 msgstr "Ratenzahlung"
 
-#: coop/models.py:68 coop/models.py:278
+#: coop/models.py:68 coop/models.py:279
 msgid "Attended Welcome Session"
 msgstr "An Willkommenstreffen teilgenommen"
 
-#: coop/models.py:70 coop/models.py:283
+#: coop/models.py:70 coop/models.py:284
 #: coop/templates/coop/draftuser_detail.html:117
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:154
 msgid "Paid Entrance Fee"
@@ -508,6 +508,7 @@ msgid "Amount paid for a share can't be negative"
 msgstr ""
 
 #: coop/models.py:242
+#, python-format
 msgid ""
 "Amount paid for a share can't be more than %(share_price)s (the price of a "
 "share)"
@@ -515,27 +516,27 @@ msgstr ""
 "Der für einen Anteil gezahlte Betrag kann nicht höher sein als "
 "%(share_price)s (der Preis eines Anteils)"
 
-#: coop/models.py:274
+#: coop/models.py:275
 msgid "Investing member"
 msgstr "Investierendes Mitglied"
 
-#: coop/models.py:281
+#: coop/models.py:282
 msgid "Signed Beteiligungserklärung"
 msgstr "Beteiligungserklärung unterschrieben"
 
-#: coop/models.py:284 coop/templates/coop/draftuser_detail.html:123
+#: coop/models.py:285 coop/templates/coop/draftuser_detail.html:123
 msgid "Paid Shares"
 msgstr "Anteile bezahlt"
 
-#: coop/models.py:326
+#: coop/models.py:327
 msgid "Currently active"
 msgstr "Derzeit aktiv"
 
-#: coop/models.py:328
+#: coop/models.py:329
 msgid "Goal"
 msgstr "Ziel"
 
-#: coop/models.py:337
+#: coop/models.py:338
 msgid "Raised amount"
 msgstr "Gesammelter Betrag"
 
@@ -1069,6 +1070,91 @@ msgstr "Aktive Mitglieder ohne Tapir-Konto"
 msgid "Members who bought extra shares"
 msgstr ""
 
+#: coop/templates/coop/tools_app.html:13
+msgid "WirMarkt on your smartphone"
+msgstr "WirMarkt auf deinem Smartphone"
+
+#: coop/templates/coop/tools_app.html:16
+msgid ""
+"\n"
+"                        Our app makes your participation as a member much "
+"easier. You always have your membership card\n"
+"                        with you, you can see your next shift, and you can "
+"suggest products. We are gradually adding more\n"
+"                        features with our IT team.\n"
+"                        Maybe you have an idea?\n"
+"                        <a href=\"https://wirmarkt.de/app\" target=\"_blank"
+"\">Join the team</a>.\n"
+"                    "
+msgstr ""
+"\n"
+"                        Unsere App erleichtert deine Mitwirkung als Mitglied "
+"erheblich. Du hast deinen Mitgliedsausweis\n"
+"                        immer dabei, siehst deine nächste Schicht und kannst "
+"Produkte vorschlagen. Nach und nach bauen\n"
+"                        wir mit unserem IT-Team weitere Features ein. "
+"Vielleicht hast du eine Idee?\n"
+"                        <a href=\"https://wirmarkt.de/app\" target=\"_blank"
+"\">Mach' bei der App mit</a>.\n"
+"                    "
+
+#: coop/templates/coop/tools_app.html:34 coop/templates/coop/tools_chat.html:31
+msgid "How it works"
+msgstr "So funktioniert's"
+
+#: coop/templates/coop/tools_app.html:38
+msgid "Install our smartphone app on your device"
+msgstr "Installiere unsere Smartphone-App auf deinem Gerät"
+
+#: coop/templates/coop/tools_app.html:39 coop/templates/coop/tools_chat.html:37
+msgid "Log in using the same username and password as on this website"
+msgstr ""
+"Logge dich mit denselben Benutzernamen und Passwort ein wie auf dieser Seite"
+
+#: coop/templates/coop/tools_app.html:48
+msgid "Download"
+msgstr "Herunterladen"
+
+#: coop/templates/coop/tools_chat.html:13
+msgid "WirMarkt chat"
+msgstr "WirMarkt Chat"
+
+#: coop/templates/coop/tools_chat.html:16
+msgid ""
+"\n"
+"                        We use a self-hosted, secure and versatile chat "
+"system called \"Rocket.Chat\". You can install it\n"
+"                        as a separate app on your smartphone or simply log "
+"in using your browser.\n"
+"                    "
+msgstr ""
+"\n"
+"                        Wir nutzen eine selbst betriebene, sichere und "
+"vielseitige Chat Software namens \"Rocket.Chat\". Do kannst sie entweder \n"
+"                        als separate App auf deinem Smartphone installieren "
+"oder einfach in deinem Browser öffnen.\n"
+"                    "
+
+#: coop/templates/coop/tools_chat.html:36
+msgid "Open WirMarkt Rocket.Chat"
+msgstr "WirMarkt Rocket.Chat öffnen"
+
+#: coop/templates/coop/tools_chat.html:46
+msgid "Need help?"
+msgstr "Brauchst du Hilfe?"
+
+#: coop/templates/coop/tools_chat.html:49
+msgid ""
+"\n"
+"                            Contact our <a href=\"mailto:office@wirmarkt.de"
+"\">member office</a>.\n"
+"                        "
+msgstr ""
+"\n"
+"                            Kontaktiere unser <a href=\"mailto:"
+"office@wirmarkt.de\">Mitgliederbüro</a>.\n"
+"                        "
+
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:7
 #, python-format
 msgid ""
@@ -1084,7 +1170,7 @@ msgid "Membership confirmation"
 msgstr "Mitgliedsbestätigung"
 
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:28
-#: coop/views/shareowner.py:400
+#: coop/views/shareowner.py:412
 #: shifts/templates/shifts/user_shifts_overview_tag.html:17
 msgid "Status"
 msgstr "Status"
@@ -1226,36 +1312,36 @@ msgstr ""
 msgid "Welcome email with membership confirmation sent."
 msgstr "Mitgliedsbestätigung per Mail gesendet."
 
-#: coop/views/shareowner.py:401 shifts/templates/shifts/shift_filters.html:25
+#: coop/views/shareowner.py:413 shifts/templates/shifts/shift_filters.html:25
 msgid "Any"
 msgstr "Alle"
 
-#: coop/views/shareowner.py:406
+#: coop/views/shareowner.py:418
 #: shifts/templates/shifts/user_shifts_overview_tag.html:107
 msgid "Shift Status"
 msgstr "Schichtstatus"
 
-#: coop/views/shareowner.py:414
+#: coop/views/shareowner.py:426
 msgid "Is registered to a slot that requires a qualification"
 msgstr "Ist für eine Schicht eingetragen, die Befähigung erfordert"
 
-#: coop/views/shareowner.py:422
+#: coop/views/shareowner.py:434
 msgid "Has qualification"
 msgstr "Hat Befähigung"
 
-#: coop/views/shareowner.py:430
+#: coop/views/shareowner.py:442
 msgid "Does not have qualification"
 msgstr "Hat die Befähigung nicht"
 
-#: coop/views/shareowner.py:440
+#: coop/views/shareowner.py:452
 msgid "ABCD Week"
 msgstr "ABCD-Woche"
 
-#: coop/views/shareowner.py:447 coop/views/shareowner.py:671
+#: coop/views/shareowner.py:459 coop/views/shareowner.py:683
 msgid "Name or member ID"
 msgstr "Name oder Mitgliedsnummer"
 
-#: coop/views/shareowner.py:623
+#: coop/views/shareowner.py:635
 msgctxt "Willing to give a share"
 msgid "No"
 msgstr "Nein"
@@ -1309,7 +1395,15 @@ msgstr "Vergangene Schichten"
 msgid "Shift exemptions"
 msgstr "Schicht-Befreiungen"
 
-#: core/templates/core/base.html:98
+#: core/templates/core/base.html:96
+msgid "Chat"
+msgstr ""
+
+#: core/templates/core/base.html:101
+msgid "App"
+msgstr ""
+
+#: core/templates/core/base.html:108
 msgid "Search Members"
 msgstr "Mitglieder suchen"
 

@@ -1,0 +1,61 @@
+{% extends "core/base.html" %}
+
+{% load django_bootstrap5 %}
+{% load i18n %}
+{% load static %}
+
+
+{% block content %}
+    <div class="container">
+
+        <div class="row">
+            <div class="offset-2 col-6">
+                <h1 class="display-3">{% translate "WirMarkt on your smartphone" %}</h1>
+
+                <p class="lead">
+                    {% blocktranslate %}
+                        Our app makes your participation as a member much easier. You always have your membership card
+                        with you, you can see your next shift, and you can suggest products. We are gradually adding more
+                        features with our IT team.
+                        Maybe you have an idea?
+                        <a href="https://wirmarkt.de/app" target="_blank">Join the team</a>.
+                    {% endblocktranslate %}
+                </p>
+            </div>
+            <div class="col-2">
+                <img class="img-fluid" src="{% static "coop/images/wirmarkt-app.png" %}"/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="offset-2 col-4">
+
+                <div class="card my-5">
+                    <h5 class="card-header">
+                        <span>{% translate "How it works" %}</span>
+                    </h5>
+                    <div class="card-body">
+                        <ul>
+                            <li>{% translate "Install our smartphone app on your device" %}</li>
+                            <li>{% translate "Log in using the same username and password as on this website" %}</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card my-5">
+                    <h5 class="card-header">
+                        <span>{% translate "Download" %}</span>
+                    </h5>
+                    <div class="card-body">
+                        <a href="https://play.google.com/store/apps/details?id=org.wirmarkt.wir_markt" target="_blank"
+                           class="card-link">
+                            <img class="img-fluid" style="height: 50%"
+                                 src="{% static "coop/images/get-it-on-play-store.png" %}"/>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

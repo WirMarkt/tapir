@@ -118,3 +118,11 @@ class StatisticsView(PermissionRequiredMixin, generic.TemplateView):
 
 class AboutView(LoginRequiredMixin, TemplateView):
     template_name = "coop/about.html"
+
+
+class ToolsAppView(LoginRequiredMixin, TemplateView):
+    template_name = "coop/tools_app.html"
+
+
+class ToolsChatView(LoginRequiredMixin, TemplateView):
+    template_name = "coop/tools_chat.html"
