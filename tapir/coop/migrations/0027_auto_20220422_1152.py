@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("coop", "0025_draftuser_paid_shares"),
+        ("coop", "0026_sepa_mandate_fields"),
     ]
 
     operations = [
