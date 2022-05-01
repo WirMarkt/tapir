@@ -195,5 +195,6 @@ class ModelLogEntry(LogEntry):
 
     def get_context_data(self):
         context = super().get_context_data()
-        context["values"] = self.values.items()
+        if self.values is set:
+            context["values"] = self.values.items()
         return context
