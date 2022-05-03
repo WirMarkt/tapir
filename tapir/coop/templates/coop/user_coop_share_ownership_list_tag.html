@@ -25,8 +25,8 @@
     <div class="card-body">
         {% if owner %}
             <div class="row m-1">
-                <div class="col-5 fw-bold text-end">{% translate "Status" %}:</div>
-                <div class="col-7" id="share_owner_status">
+                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Status" %}:</div>
+                <div class="col-sm-7" id="share_owner_status">
                     {% if owner.is_investing %}
                         <span style="color: blue;">{% translate "Investing" %}</span>
                     {% else %}
@@ -41,14 +41,14 @@
 
             {% if object.ratenzahlung %}
                 <div class="row m-1">
-                    <div class="col-3 fw-bold text-end">{% translate "Ratenzahlung" %}:</div>
-                    <div class="col-9" id="share_owner_email">Yes</div>
+                    <div class="col-sm-3 fw-bold text-sm-end">{% translate "Ratenzahlung" %}:</div>
+                    <div class="col-sm-9" id="share_owner_email">Yes</div>
                 </div>
             {% endif %}
 
             <div class="row m-1">
-                <div class="col-5 fw-bold text-end">{% translate "Welcome Session" %}:</div>
-                <div class="col-7">
+                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Welcome Session" %}:</div>
+                <div class="col-sm-7">
                     {% if owner.attended_welcome_session %}
                         <span class="text-success">{% translate "Attended" %}</span>
                     {% else %}
@@ -68,8 +68,8 @@
             </div>
 
             <div class="row m-1">
-                <div class="col-5 fw-bold text-end">{% translate "Owned shares" %}:</div>
-                <div class="col-7">
+                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Owned shares" %}:</div>
+                <div class="col-sm-7">
                     <span id="share_owner_num_shares">{{ owner.num_shares }}</span>
                     (<a class="" data-bs-toggle="collapse" href="#shares-table">Details</a>)
                 </div>
@@ -151,18 +151,18 @@
             </div>
 
             <div class="row m-1">
-                <div class="col-5 fw-bold text-end">{% translate "Paid Entrance Fee" %}:</div>
-                <div class="col-7">{{ owner.paid_membership_fee|yesno:"Yes,No" }}</div>
+                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Paid Entrance Fee" %}:</div>
+                <div class="col-sm-7">{{ owner.paid_membership_fee|yesno:"Yes,No" }}</div>
             </div>
 
             <div class="row m-1">
-                <div class="col-5 fw-bold text-end">{% translate "Ratenzahlung" %}:</div>
-                <div class="col-7">{{ owner.ratenzahlung|yesno:"Yes,No" }}</div>
+                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Ratenzahlung" %}:</div>
+                <div class="col-sm-7">{{ owner.ratenzahlung|yesno:"Yes,No" }}</div>
             </div>
 
             <div class="row m-1">
-                <div class="col-5 fw-bold text-end">{% translate "Willing to gift a share" %}:</div>
-                <div class="col-7">{{ owner.willing_to_gift_a_share|yesno:"Yes,No" }}</div>
+                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Willing to gift a share" %}:</div>
+                <div class="col-sm-7">{{ owner.willing_to_gift_a_share|yesno:"Yes,No" }}</div>
             </div>
 
             {% if perms.accounts.manage %}
