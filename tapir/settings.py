@@ -281,7 +281,3 @@ if ENABLE_API:
         "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
         "REFRESH_TOKEN_LIFETIME": timedelta(weeks=12),
     }
-
-
-COOP_SHARE_PRICE = Decimal(100)
-COOP_ENTRY_AMOUNT = Decimal(0)

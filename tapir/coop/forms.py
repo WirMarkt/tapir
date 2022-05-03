@@ -5,11 +5,11 @@ from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
 from tapir import settings
+from tapir.coop.config import COOP_SHARE_PRICE
 from tapir.coop.models import ShareOwnership, DraftUser, ShareOwner, FinancingCampaign
 from tapir.coop.pdfs import get_membership_agreement_pdf
 from tapir.settings import FROM_EMAIL_MEMBER_OFFICE
 from tapir.utils.forms import DateInput, TapirPhoneNumberField
-from tapir.settings import COOP_SHARE_PRICE
 
 
 class ShareOwnershipForm(forms.ModelForm):

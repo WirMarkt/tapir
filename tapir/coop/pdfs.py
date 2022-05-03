@@ -4,7 +4,7 @@ from django.template.loader import render_to_string
 from django.utils import translation
 from django_weasyprint.utils import django_url_fetcher
 
-from tapir.settings import COOP_SHARE_PRICE, COOP_ENTRY_AMOUNT
+from tapir.coop.config import COOP_SHARE_PRICE, COOP_ENTRY_AMOUNT
 
 _WEASYPRINT_FONT_CONFIG = weasyprint.fonts.FontConfiguration()
 

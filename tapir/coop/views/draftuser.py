@@ -21,7 +21,6 @@ from tapir.coop.models import (
     ShareOwner,
     ShareOwnership,
 )
-from tapir.settings import COOP_SHARE_PRICE
 from tapir.utils.models import copy_user_info
 
 
