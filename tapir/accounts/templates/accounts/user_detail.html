@@ -17,7 +17,7 @@
     <div class="row">
         <div class="col-md-6 p-0">
             <div class="card m-2" id="tapir_user_detail_card">
-                <h5 class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-header">
                     {% translate "Personal Data" %}
                 </h5>
                 <div class="card-body">
@@ -80,25 +80,25 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-sm-end m-1 mt-3">
-                        <div class="ms-1">
+                    <div class="d-flex justify-content-sm-end m-1 mt-3 flex-wrap">
+                        <div class="m-1">
                             {% if perms.accounts.manage %}
                                 <form method="post" action="{% url "accounts:send_user_welcome_email" object.pk %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn tapir-btn btn-info ms-3">
+                                    <button type="submit" class="btn tapir-btn btn-info">
                                         <span class="material-icons">send</span>{% translate "Send account activation email" %}
                                     </button>
                                 </form>
                             {% endif %}
                         </div>
                         {% if object.pk == request.user.pk %}
-                        <div class="ms-1">
-                            <a class="btn tapir-btn btn-outline-info ms-1" href="{% url "password_change" %}"><span
+                        <div class="m-1">
+                            <a class="btn tapir-btn btn-outline-info" href="{% url "password_change" %}"><span
                                     class="material-icons">vpn_key</span>{% translate "Change Password" %}</a>
                         </div>
                         {% endif %}
                         {% if perms.accounts.manage %}
-                        <div class="ms-1">
+                        <div class="m-1">
                             <a class="btn tapir-btn btn-outline-info" href="{% url "accounts:user_update" object.pk %}"
                             id="tapir_user_edit_button">
                                 <span class="material-icons">edit</span>{% translate 'Edit' %}
