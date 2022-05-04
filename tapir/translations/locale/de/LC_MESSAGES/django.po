@@ -245,7 +245,7 @@ msgstr "Berechtigungen"
 
 #: accounts/templates/accounts/user_detail.html:89
 msgid "Send account activation email"
-msgstr "Konto-Aktivierungsemail erneut senden"
+msgstr "Konto-Aktivierungs-E-Mail senden"
 
 #: accounts/templates/accounts/user_detail.html:97
 msgid "Change Password"
