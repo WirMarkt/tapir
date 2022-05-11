@@ -309,6 +309,7 @@ class ShareOwnerTable(django_tables2.Table):
             "display_name",
             "first_name",
             "last_name",
+            "postcode",
             "status",
             "attended_welcome_session",
             "ratenzahlung",
@@ -321,6 +322,7 @@ class ShareOwnerTable(django_tables2.Table):
     )
     first_name = django_tables2.Column(empty_values=(), orderable=False, visible=False)
     last_name = django_tables2.Column(empty_values=(), orderable=False, visible=False)
+    postcode = django_tables2.Column(empty_values=(), orderable=False, visible=False)
     status = django_tables2.Column(empty_values=(), orderable=False)
     email = django_tables2.Column(empty_values=(), orderable=False, visible=False)
     phone_number = django_tables2.Column(
@@ -354,6 +356,14 @@ class ShareOwnerTable(django_tables2.Table):
     @staticmethod
     def value_last_name(value, record: ShareOwner):
         return record.get_info().last_name
+
+    @staticmethod
+    def value_postcode(value, record: ShareOwner):
+        return record.get_info().postcode
+
+    @staticmethod
+    def render_postcode(value, record: ShareOwner):
+        return record.get_info().postcode
 
     @staticmethod
     def render_status(value, record: ShareOwner):
