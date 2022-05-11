@@ -39,7 +39,7 @@
     </div>
     <div style="flex-grow: 1"></div>
     <div style="margin-top: 13mm;">
-        <img src="{% static "../static/images/Logo_dark.svg" %}" style="width: 60mm;"/>
+        <img src="{% static "core/images/Logo_dark.svg" %}" style="width: 60mm;"/>
     </div>
 </div>
 
@@ -120,8 +120,7 @@
             in Höhe von <strong>{{ share_price|floatformat:2 }} Euro je Geschäftsanteil</strong> zu leisten.
             {% if entry_amount > 0 %}
                 Hinzu kommt das Eintrittsgeld in Höhe von {{ entry_amount|floatformat:2 }} Euro zu leisten, das der
-                Deckung von
-                Verwaltungskosten dient
+                Deckung von Verwaltungskosten dient
             {% endif %}
             Insgesamt verpflichte ich mich daher,
             <span style="display: inline-block; width: 20mm; border-bottom: 2px solid black; text-align: center;">
@@ -129,7 +128,7 @@
             </span>Euro
             zu leisten. Die Satzung der
             <strong>WirMarkt Supermarkt Hamburg eG i.G.</strong> ist mir (entweder digital oder in gedruckter Form)
-            ausgehändigt worden kann hier eingesehen werden:
+            ausgehändigt worden und kann hier eingesehen werden:
             <br/><a href="https://wirmarkt.de/download/">https://wirmarkt.de/download/</a>
         </div>
     </div>
@@ -165,7 +164,8 @@
         <div style="flex: 1">
             Ich möchte als investierendes Mitglied (= Fördermitglied) in die Mitgliederliste eingetragen werden.<br/>
             <b>Hinweis</b>: Investierende Mitglieder sind fördernde Mitglieder. Sie haben kein Stimmrecht in der
-            Generalversammlung und können die für Mitglieder exklusiven Leistungen der Genossenschaft nicht nutzen.
+            Generalversammlung und können die für ordentliche Mitglieder exklusiven Leistungen der Genossenschaft nicht
+            nutzen.
         </div>
     </div>
 
@@ -263,9 +263,6 @@
         <div style="flex-grow: 1"></div>
         <div style="border-top: 1px solid black; width: 80mm;">(Ort, Datum, Unterschrift)</div>
     </div>
-
-</div>
-
 
 </div>
 
