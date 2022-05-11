@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-01 17:59+0200\n"
+"POT-Creation-Date: 2022-05-11 11:29+0200\n"
 "PO-Revision-Date: 2021-11-21 17:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -145,10 +145,10 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"<p>Dein Nutzer:innenname ist <strong>%(username)s</strong> . Um dein Konto nutzen zu "
-"können, musst du zuerst ein Passwort festlegen: <a href=\"%(site_url)s"
-"%(password_reset_confirm_url)s\">Klick hier um dein Passwort zu setzen.</a></"
-"p>\n"
+"<p>Dein Nutzer:innenname ist <strong>%(username)s</strong> . Um dein Konto "
+"nutzen zu können, musst du zuerst ein Passwort festlegen: <a href="
+"\"%(site_url)s%(password_reset_confirm_url)s\">Klick hier um dein Passwort "
+"zu setzen.</a></p>\n"
 "<p>Dieser Link ist nur einige Wochen gültig. Sollte er abgelaufen sein, "
 "kannst du einen neuen Link anfordern: <a href=\"%(site_url)s"
 "%(password_reset_request_url)s\">Klick hier um einen neuen Link zu bekommen."
@@ -218,7 +218,7 @@ msgstr "Name"
 
 #: accounts/templates/accounts/user_detail.html:33
 #: coop/templates/coop/draftuser_detail.html:22
-#: coop/templates/coop/draftuser_list.html:22
+#: coop/templates/coop/draftuser_list.html:23
 #: coop/templates/coop/shareowner_detail.html:39
 msgid "Email"
 msgstr "E-Mail-Adresse"
@@ -439,7 +439,7 @@ msgstr ""
 "mindestens einen Anteil übernehmen. Um den Aufbau der Genossenschaft zu "
 "unterstützen, kannst du freiwillig mehr Anteile übernehmen."
 
-#: coop/forms.py:82 coop/views/shareowner.py:231
+#: coop/forms.py:82 coop/views/shareowner.py:232
 #, python-format
 msgid "Welcome at %(organisation_name)s!"
 msgstr "Willkommen bei %(organisation_name)s!"
@@ -449,12 +449,12 @@ msgid "Is company"
 msgstr "Ist eine Firma"
 
 #: coop/models.py:42 coop/models.py:254
-#: coop/templates/coop/draftuser_list.html:20
+#: coop/templates/coop/draftuser_list.html:21
 msgid "First name"
 msgstr "Vorname"
 
 #: coop/models.py:43 coop/models.py:255
-#: coop/templates/coop/draftuser_list.html:21
+#: coop/templates/coop/draftuser_list.html:22
 msgid "Last name"
 msgstr "Nachname"
 
@@ -615,7 +615,6 @@ msgid "Welcome Session"
 msgstr "Willkommenstreffen"
 
 #: coop/templates/coop/draftuser_detail.html:89
-#: coop/templates/coop/draftuser_list.html:23
 msgid "Beteiligungserklärung"
 msgstr "Beteiligungserklärung"
 
@@ -636,19 +635,34 @@ msgstr "Bewerber:in anlegen"
 msgid "Applicants"
 msgstr "Bewerber:innen"
 
-#: coop/templates/coop/draftuser_list.html:18
+#: coop/templates/coop/draftuser_list.html:19
 msgid "List of applicants"
 msgstr "Liste der Bewerber:innen"
 
 #: coop/templates/coop/draftuser_list.html:24
+msgid "Membership Agreement"
+msgstr "Beteiligungserklärung"
+
+#: coop/templates/coop/draftuser_list.html:25
 msgid "Entrance Fee"
 msgstr "Eintrittsgeld"
 
-#: coop/templates/coop/draftuser_list.html:34
+#: coop/templates/coop/draftuser_list.html:26
+msgid "Shares"
+msgstr "Anteile"
+
+#: coop/templates/coop/draftuser_list.html:27
+#: log/templates/log/log_entry_list_tag.html:15
+#: shifts/templates/shifts/user_shift_account_log.html:26
+msgid "Date"
+msgstr "Datum"
+
+#: coop/templates/coop/draftuser_list.html:37
 msgid "Signed"
 msgstr "Unterschrieben"
 
-#: coop/templates/coop/draftuser_list.html:39
+#: coop/templates/coop/draftuser_list.html:42
+#: coop/templates/coop/draftuser_list.html:47
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:95
 msgid "Paid"
 msgstr "Bezahlt"
@@ -1189,7 +1203,7 @@ msgstr "Mitgliedsbestätigung"
 
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:28
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:84
-#: coop/views/shareowner.py:412
+#: coop/views/shareowner.py:423
 #: shifts/templates/shifts/user_shifts_overview_tag.html:17
 msgid "Status"
 msgstr "Status"
@@ -1335,40 +1349,40 @@ msgstr ""
 msgid "Member ID"
 msgstr "Mitglied"
 
-#: coop/views/shareowner.py:258
+#: coop/views/shareowner.py:259
 msgid "Welcome email with membership confirmation sent."
 msgstr "Mitgliedsbestätigung per Mail gesendet."
 
-#: coop/views/shareowner.py:413 shifts/templates/shifts/shift_filters.html:25
+#: coop/views/shareowner.py:424 shifts/templates/shifts/shift_filters.html:25
 msgid "Any"
 msgstr "Alle"
 
-#: coop/views/shareowner.py:418
+#: coop/views/shareowner.py:429
 #: shifts/templates/shifts/user_shifts_overview_tag.html:107
 msgid "Shift Status"
 msgstr "Schichtstatus"
 
-#: coop/views/shareowner.py:426
+#: coop/views/shareowner.py:437
 msgid "Is registered to a slot that requires a qualification"
 msgstr "Ist für eine Schicht eingetragen, die Befähigung erfordert"
 
-#: coop/views/shareowner.py:434
+#: coop/views/shareowner.py:445
 msgid "Has qualification"
 msgstr "Hat Befähigung"
 
-#: coop/views/shareowner.py:442
+#: coop/views/shareowner.py:453
 msgid "Does not have qualification"
 msgstr "Hat die Befähigung nicht"
 
-#: coop/views/shareowner.py:452
+#: coop/views/shareowner.py:463
 msgid "ABCD Week"
 msgstr "ABCD-Woche"
 
-#: coop/views/shareowner.py:459 coop/views/shareowner.py:683
+#: coop/views/shareowner.py:470 coop/views/shareowner.py:694
 msgid "Name or member ID"
 msgstr "Name oder Mitgliedsnummer"
 
-#: coop/views/shareowner.py:635
+#: coop/views/shareowner.py:646
 msgctxt "Willing to give a share"
 msgid "No"
 msgstr "Nein"
@@ -1490,15 +1504,23 @@ msgstr "Erstellungsdatum"
 msgid "Log"
 msgstr "Protokoll"
 
-#: log/templates/log/log_entry_list_tag.html:11
+#: log/templates/log/log_entry_list_tag.html:12
 msgid "List of log entries for this member"
 msgstr "List der Protokoll-Einträge für dieses Mitglied"
 
-#: log/templates/log/log_entry_list_tag.html:39
+#: log/templates/log/log_entry_list_tag.html:16
+msgid "Actor"
+msgstr ""
+
+#: log/templates/log/log_entry_list_tag.html:17
+msgid "Message"
+msgstr ""
+
+#: log/templates/log/log_entry_list_tag.html:41
 msgid "Notes about this user"
 msgstr "Notizen über diese:n Benutzer:in"
 
-#: log/templates/log/log_entry_list_tag.html:42
+#: log/templates/log/log_entry_list_tag.html:45
 msgid "Add Note"
 msgstr "Notiz hinzufügen"
 
@@ -1566,13 +1588,15 @@ msgstr ""
 "der Befreiung sind : {attendances_display}"
 
 #: shifts/forms.py:264
+#, python-format
 msgid ""
 "The user will be unregistered from the following ABCD shifts because the "
 "exemption is longer than %(number_of_cycles)s cycles: "
 "%(attendances_display)s "
 msgstr ""
 "Das Mitglied wird von den folgenden ABCD-Schichten abgemeldet, weil die "
-"Befreiung länger als %(number_of_cycles)s Zyklen ist: %(attendances_display)s "
+"Befreiung länger als %(number_of_cycles)s Zyklen ist: "
+"%(attendances_display)s "
 
 #: shifts/models.py:36
 msgid "Teamleader"
@@ -2301,10 +2325,6 @@ msgstr "Füge per Hand einen Eintrag hinzu"
 #: shifts/templates/shifts/user_shift_account_log.html:23
 msgid "List of changes to this members shift account "
 msgstr ""
-
-#: shifts/templates/shifts/user_shift_account_log.html:26
-msgid "Date"
-msgstr "Datum"
 
 #: shifts/templates/shifts/user_shift_account_log.html:27
 msgid "Value"
