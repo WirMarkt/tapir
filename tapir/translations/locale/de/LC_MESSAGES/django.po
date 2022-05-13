@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-13 18:20+0200\n"
+"POT-Creation-Date: 2022-05-13 18:35+0200\n"
 "PO-Revision-Date: 2021-11-21 17:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -160,6 +160,7 @@ msgid "Welcome"
 msgstr "Willkommen"
 
 #: accounts/templates/accounts/email/welcome_email.html:43
+#, python-format
 msgid ""
 "\n"
 "        <p>Using your username <strong>%(username)s</strong>, you have "
@@ -179,8 +180,8 @@ msgstr ""
 "        <p>Mit deinem Benutzernamen <strong>%(username)s</strong> hast du "
 "Zugang zu folgenden Ressourcen:</p>\n"
 "        <ul>\n"
-"            <li><a href=\"%(site_url)s\">%(coop_name)s Mitgliederverwaltung</a></"
-"li>\n"
+"            <li><a href=\"%(site_url)s\">%(coop_name)s Mitgliederverwaltung</"
+"a></li>\n"
 "            <li><a href=\"https://wirmarkt.de/app\" target=\"_blank\">"
 "%(coop_name)s Community und Mitglieder App</a></li>\n"
 "            <li><a href=\"https://rocketchat.wirmarkt.de\" target=\"_blank\">"
@@ -225,7 +226,7 @@ msgstr "Name"
 
 #: accounts/templates/accounts/user_detail.html:33
 #: coop/templates/coop/draftuser_detail.html:22
-#: coop/templates/coop/draftuser_list.html:23
+#: coop/templates/coop/draftuser_list.html:27
 #: coop/templates/coop/shareowner_detail.html:39
 msgid "Email"
 msgstr "E-Mail-Adresse"
@@ -456,12 +457,12 @@ msgid "Is company"
 msgstr "Ist eine Firma"
 
 #: coop/models.py:42 coop/models.py:254
-#: coop/templates/coop/draftuser_list.html:21
+#: coop/templates/coop/draftuser_list.html:25
 msgid "First name"
 msgstr "Vorname"
 
 #: coop/models.py:43 coop/models.py:255
-#: coop/templates/coop/draftuser_list.html:22
+#: coop/templates/coop/draftuser_list.html:26
 msgid "Last name"
 msgstr "Nachname"
 
@@ -634,7 +635,8 @@ msgstr "Mitglied anlegen"
 msgid "Create applicant"
 msgstr "Bewerber:in anlegen"
 
-#: coop/templates/coop/draftuser_list.html:8
+#: coop/templates/coop/draftuser_list.html:6
+#: coop/templates/coop/draftuser_list.html:12
 #: coop/templates/coop/draftuser_register_form.default.html:18
 #: coop/templates/coop/draftuser_register_form.html:18
 #: coop/templates/coop/statistics.html:140 core/templates/core/base.html:56
@@ -642,34 +644,34 @@ msgstr "Bewerber:in anlegen"
 msgid "Applicants"
 msgstr "Bewerber:innen"
 
-#: coop/templates/coop/draftuser_list.html:19
+#: coop/templates/coop/draftuser_list.html:23
 msgid "List of applicants"
 msgstr "Liste der Bewerber:innen"
 
-#: coop/templates/coop/draftuser_list.html:24
+#: coop/templates/coop/draftuser_list.html:28
 msgid "Membership Agreement"
 msgstr "Beteiligungserklärung"
 
-#: coop/templates/coop/draftuser_list.html:25
+#: coop/templates/coop/draftuser_list.html:29
 msgid "Entrance Fee"
 msgstr "Eintrittsgeld"
 
-#: coop/templates/coop/draftuser_list.html:26
+#: coop/templates/coop/draftuser_list.html:30
 msgid "Shares"
 msgstr "Anteile"
 
-#: coop/templates/coop/draftuser_list.html:27
+#: coop/templates/coop/draftuser_list.html:31
 #: log/templates/log/log_entry_list_tag.html:15
 #: shifts/templates/shifts/user_shift_account_log.html:26
 msgid "Date"
 msgstr "Datum"
 
-#: coop/templates/coop/draftuser_list.html:37
+#: coop/templates/coop/draftuser_list.html:41
 msgid "Signed"
 msgstr "Unterschrieben"
 
-#: coop/templates/coop/draftuser_list.html:42
-#: coop/templates/coop/draftuser_list.html:47
+#: coop/templates/coop/draftuser_list.html:46
+#: coop/templates/coop/draftuser_list.html:51
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:95
 msgid "Paid"
 msgstr "Bezahlt"
@@ -1050,20 +1052,21 @@ msgstr "Zur Nutzer:innen-Seite"
 msgid "Edit share owner"
 msgstr "Mitglied bearbeiten"
 
-#: coop/templates/coop/shareowner_list.html:19
+#: coop/templates/coop/shareowner_list.html:11
+#: coop/templates/coop/shareowner_list.html:23
 msgid "Cooperative Members"
 msgstr "Genossenschaftsmitglieder"
 
-#: coop/templates/coop/shareowner_list.html:22
+#: coop/templates/coop/shareowner_list.html:26
 #: shifts/templates/shifts/members_on_alert_list.html:18
 msgid "Export"
 msgstr "Exportieren"
 
-#: coop/templates/coop/shareowner_list.html:43
+#: coop/templates/coop/shareowner_list.html:47
 msgid "Clear all filters"
 msgstr "Alle Filter entfernen"
 
-#: coop/templates/coop/shareowner_list.html:46
+#: coop/templates/coop/shareowner_list.html:50
 #, python-format
 msgid ""
 "\n"
@@ -1108,11 +1111,15 @@ msgstr "Aktive Mitglieder ohne Tapir-Konto"
 msgid "Members who bought extra shares"
 msgstr "Mitglieder die weitere Anteile übernommen haben"
 
-#: coop/templates/coop/tools_app.html:13
+#: coop/templates/coop/tools_app.html:8 core/templates/core/base.html:101
+msgid "App"
+msgstr ""
+
+#: coop/templates/coop/tools_app.html:16
 msgid "WirMarkt on your smartphone"
 msgstr "WirMarkt auf deinem Smartphone"
 
-#: coop/templates/coop/tools_app.html:16
+#: coop/templates/coop/tools_app.html:19
 msgid ""
 "\n"
 "                        Our app makes your participation as a member much "
@@ -1136,28 +1143,32 @@ msgstr ""
 "\">Mach' bei der App mit</a>.\n"
 "                    "
 
-#: coop/templates/coop/tools_app.html:34 coop/templates/coop/tools_chat.html:31
+#: coop/templates/coop/tools_app.html:37 coop/templates/coop/tools_chat.html:34
 msgid "How it works"
 msgstr "So funktioniert's"
 
-#: coop/templates/coop/tools_app.html:38
+#: coop/templates/coop/tools_app.html:41
 msgid "Install our smartphone app on your device"
 msgstr "Installiere unsere Smartphone-App auf deinem Gerät"
 
-#: coop/templates/coop/tools_app.html:39 coop/templates/coop/tools_chat.html:37
+#: coop/templates/coop/tools_app.html:42 coop/templates/coop/tools_chat.html:40
 msgid "Log in using the same username and password as on this website"
 msgstr ""
 "Logge dich mit denselben Benutzernamen und Passwort ein wie auf dieser Seite"
 
-#: coop/templates/coop/tools_app.html:48
+#: coop/templates/coop/tools_app.html:51
 msgid "Download"
 msgstr "Herunterladen"
 
-#: coop/templates/coop/tools_chat.html:13
+#: coop/templates/coop/tools_chat.html:8 core/templates/core/base.html:96
+msgid "Chat"
+msgstr ""
+
+#: coop/templates/coop/tools_chat.html:16
 msgid "WirMarkt chat"
 msgstr "WirMarkt Chat"
 
-#: coop/templates/coop/tools_chat.html:16
+#: coop/templates/coop/tools_chat.html:19
 msgid ""
 "\n"
 "                        We use a self-hosted, secure and versatile chat "
@@ -1173,15 +1184,15 @@ msgstr ""
 "oder einfach in deinem Browser öffnen.\n"
 "                    "
 
-#: coop/templates/coop/tools_chat.html:36
+#: coop/templates/coop/tools_chat.html:39
 msgid "Open WirMarkt Rocket.Chat"
 msgstr "WirMarkt Rocket.Chat öffnen"
 
-#: coop/templates/coop/tools_chat.html:46
+#: coop/templates/coop/tools_chat.html:49
 msgid "Need help?"
 msgstr "Brauchst du Hilfe?"
 
-#: coop/templates/coop/tools_chat.html:49
+#: coop/templates/coop/tools_chat.html:52
 msgid ""
 "\n"
 "                            Contact our <a href=\"mailto:office@wirmarkt.de"
@@ -1292,7 +1303,8 @@ msgstr "Mitgliedsbestätigung per Mail senden"
 msgid "User is not a cooperative member."
 msgstr "Benutzer:in ist kein Genossenschaftsmitglied."
 
-#: coop/templates/coop/welcome_desk_search.html:18
+#: coop/templates/coop/welcome_desk_search.html:15
+#: coop/templates/coop/welcome_desk_search.html:22
 #: core/templates/core/base.html:46 core/templatetags/core.py:53
 #: core/templatetags/core.py:55
 msgid "Welcome Desk"
@@ -1314,12 +1326,6 @@ msgstr ""
 "%(name)s hat kein Tapir-Konto. Kontaktiere eine Person aus dem Vorstand."
 
 #: coop/templates/coop/welcome_desk_share_owner.html:36
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "                            %(name)s has a negative shift balance "
-#| "(%(balance)s). Contact a member of the management\n"
-#| "                            team."
 msgid ""
 "\n"
 "                            %(name)s has a negative shift balance "
@@ -1401,8 +1407,8 @@ msgid "No"
 msgstr "Nein"
 
 #: core/templates/core/base.html:14
-msgid "Member and Shift Management"
-msgstr "Mitglieder und Schichten-Management"
+msgid "Member Administration and Shift Plan"
+msgstr "Mitgliederverwaltung und Schichtplan"
 
 #: core/templates/core/base.html:52 core/templatetags/core.py:29
 msgid "Cooperative"
@@ -1428,10 +1434,12 @@ msgstr "Schichten"
 #: core/templates/core/base.html:69 core/templates/core/base.html:83
 #: core/templatetags/core.py:70
 #: shifts/templates/shifts/shift_calendar_future.html:6
+#: shifts/templates/shifts/shift_calendar_future.html:10
 msgid "Shift calendar"
 msgstr "Schicht-Kalender"
 
 #: core/templates/core/base.html:70 core/templates/core/base.html:86
+#: shifts/templates/shifts/shift_template_overview.html:15
 msgid "ABCD week-plan"
 msgstr "ABCD Wochenplan"
 
@@ -1448,14 +1456,6 @@ msgstr "Vergangene Schichten"
 #: shifts/templates/shifts/shiftexemption_list.html:8
 msgid "Shift exemptions"
 msgstr "Schicht-Befreiungen"
-
-#: core/templates/core/base.html:96
-msgid "Chat"
-msgstr ""
-
-#: core/templates/core/base.html:101
-msgid "App"
-msgstr ""
 
 #: core/templates/core/base.html:108
 msgid "Search Members"
@@ -1982,7 +1982,7 @@ msgstr ""
 msgid "Already occupied shifts :"
 msgstr "Schon besetzte Schichten:"
 
-#: shifts/templates/shifts/shift_calendar_future.html:10
+#: shifts/templates/shifts/shift_calendar_future.html:14
 #, python-format
 msgid ""
 "\n"
@@ -2012,7 +2012,7 @@ msgid "starting"
 msgstr "beginnt"
 
 #: shifts/templates/shifts/shift_calendar_template.html:33
-#: shifts/templates/shifts/shift_template_overview.html:38
+#: shifts/templates/shifts/shift_template_overview.html:42
 msgid "Week "
 msgstr "Woche "
 
@@ -2237,11 +2237,11 @@ msgstr "ABCD-Wochenkalender"
 msgid "as pdf"
 msgstr "als pdf"
 
-#: shifts/templates/shifts/shift_template_overview.html:19
+#: shifts/templates/shifts/shift_template_overview.html:23
 msgid "ABCD schedule overview, current week: "
 msgstr "ABCD-Zeitplan Übersicht, laufende Woche: "
 
-#: shifts/templates/shifts/shift_template_overview.html:22
+#: shifts/templates/shifts/shift_template_overview.html:26
 msgid ""
 "\n"
 "                    <p>This is the ABCD shiftplan. It repeats every four "
@@ -2263,7 +2263,7 @@ msgstr ""
 "ans Mitgliederbüro.</p>\n"
 " "
 
-#: shifts/templates/shifts/shift_template_overview.html:33
+#: shifts/templates/shifts/shift_template_overview.html:37
 msgid "Calendar of ABCD shifts"
 msgstr "Kalender der ABCD-Schichten"
 
