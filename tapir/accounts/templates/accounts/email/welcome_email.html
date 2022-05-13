@@ -43,8 +43,9 @@
     {% blocktranslate with username=tapir_user.username %}
         <p>Using your username <strong>{{ username }}</strong>, you have access to several of our resources:</p>
         <ul>
-            <li><a href="https://wirmarkt.de/app" target="_blank">WirMarkt Community and Membership App</a></li>
-            <li><a href="https://rocketchat.wirmarkt.de" target="_blank">WirMarkt Rocket.Chat</a> (chat system for communication across teams and between members)</li>
+            <li><a href="{{ site_url }}">{{ coop_name }} member system</a></li>
+            <li><a href="https://wirmarkt.de/app" target="_blank">{{ coop_name }} Community and Membership App</a></li>
+            <li><a href="https://rocketchat.wirmarkt.de" target="_blank">{{ coop_name }} Chat</a> (chat system for communication across teams and between members)</li>
         </ul>
     {% endblocktranslate %}
 </div>

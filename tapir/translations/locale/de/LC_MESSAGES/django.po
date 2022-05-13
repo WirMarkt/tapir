@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-11 11:29+0200\n"
+"POT-Creation-Date: 2022-05-13 18:20+0200\n"
 "PO-Revision-Date: 2021-11-21 17:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -78,7 +78,7 @@ msgstr "Mit-Einkäufer:in"
 msgid "Preferred Language"
 msgstr "Bevorzugte Sprache"
 
-#: accounts/models.py:208
+#: accounts/models.py:209
 msgid "None"
 msgstr "Keine"
 
@@ -98,8 +98,8 @@ msgid ""
 msgstr ""
 "\n"
 "<p> Liebe:r %(user_display_name)s,</p>\n"
-"<p>soeben haben wir für dich ein Konto in unserem %(coop_name)s "
-"Mitgliedersystem angelegt. Hier kannst du deine kommenden Schichten "
+"<p>soeben haben wir für dich ein Konto in unserer %(coop_name)s "
+"Mitgliederverwaltung angelegt. Hier kannst du deine kommenden Schichten "
 "einsehen, dir nach Lust und Laune eine zusätzliche Schicht buchen oder eine "
 "deiner eigenen Schichten zur Neubesetzung freigeben, beispielsweise wenn du "
 "in den Urlaub fährst.</p>\n"
@@ -160,16 +160,17 @@ msgid "Welcome"
 msgstr "Willkommen"
 
 #: accounts/templates/accounts/email/welcome_email.html:43
-#, python-format
 msgid ""
 "\n"
 "        <p>Using your username <strong>%(username)s</strong>, you have "
 "access to several of our resources:</p>\n"
 "        <ul>\n"
-"            <li><a href=\"https://wirmarkt.de/app\" target=\"_blank"
-"\">WirMarkt Community and Membership App</a></li>\n"
-"            <li><a href=\"https://rocketchat.wirmarkt.de\" target=\"_blank"
-"\">WirMarkt Rocket.Chat</a> (chat system for communication across teams and "
+"            <li><a href=\"%(site_url)s\">%(coop_name)s member system</a></"
+"li>\n"
+"            <li><a href=\"https://wirmarkt.de/app\" target=\"_blank\">"
+"%(coop_name)s Community and Membership App</a></li>\n"
+"            <li><a href=\"https://rocketchat.wirmarkt.de\" target=\"_blank\">"
+"%(coop_name)s Chat</a> (chat system for communication across teams and "
 "between members)</li>\n"
 "        </ul>\n"
 "    "
@@ -178,15 +179,17 @@ msgstr ""
 "        <p>Mit deinem Benutzernamen <strong>%(username)s</strong> hast du "
 "Zugang zu folgenden Ressourcen:</p>\n"
 "        <ul>\n"
-"            <li><a href=\"https://wirmarkt.de/app\" target=\"_blank"
-"\">WirMarkt Community und Mitglieder App</a></li>\n"
-"            <li><a href=\"https://rocketchat.wirmarkt.de\" target=\"_blank"
-"\">WirMarkt Rocket.Chat</a> (Chat-System für Kommunikation in den AGs und "
+"            <li><a href=\"%(site_url)s\">%(coop_name)s Mitgliederverwaltung</a></"
+"li>\n"
+"            <li><a href=\"https://wirmarkt.de/app\" target=\"_blank\">"
+"%(coop_name)s Community und Mitglieder App</a></li>\n"
+"            <li><a href=\"https://rocketchat.wirmarkt.de\" target=\"_blank\">"
+"%(coop_name)s Chat</a> (Chat-System für Kommunikation in den AGs und "
 "zwischen Mitgliedern)</li>\n"
 "        </ul>\n"
 "    "
 
-#: accounts/templates/accounts/email/welcome_email.html:53
+#: accounts/templates/accounts/email/welcome_email.html:54
 #: coop/templates/coop/email/membership_application_welcome.html:29
 #: coop/templates/coop/email/membership_confirmation_welcome.html:63
 msgid ""
@@ -202,11 +205,11 @@ msgstr ""
 
 #: accounts/templates/accounts/email/welcome_email_subject.default.html:2
 msgid "Your account in the member system"
-msgstr "Dein Konto im Mitgliedersystem"
+msgstr "Dein Konto in der Mitgliederverwaltung"
 
 #: accounts/templates/accounts/email/welcome_email_subject.html:2
 msgid "Your account in the WirMarkt member system"
-msgstr "Dein Konto im WirMarkt Mitgliedersystem"
+msgstr "Dein Konto in der WirMarkt Mitgliederverwaltung"
 
 #: accounts/templates/accounts/user_detail.html:21
 #: coop/templates/coop/shareowner_detail.html:14
@@ -1311,6 +1314,12 @@ msgstr ""
 "%(name)s hat kein Tapir-Konto. Kontaktiere eine Person aus dem Vorstand."
 
 #: coop/templates/coop/welcome_desk_share_owner.html:36
+#, fuzzy, python-format
+#| msgid ""
+#| "\n"
+#| "                            %(name)s has a negative shift balance "
+#| "(%(balance)s). Contact a member of the management\n"
+#| "                            team."
 msgid ""
 "\n"
 "                            %(name)s has a negative shift balance "
