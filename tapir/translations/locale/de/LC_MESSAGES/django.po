@@ -204,6 +204,10 @@ msgstr ""
 msgid "Your account in the member system"
 msgstr "Dein Konto im Mitgliedersystem"
 
+#: accounts/templates/accounts/email/welcome_email_subject.html:2
+msgid "Your account in the WirMarkt member system"
+msgstr "Dein Konto im WirMarkt Mitgliedersystem"
+
 #: accounts/templates/accounts/user_detail.html:21
 #: coop/templates/coop/shareowner_detail.html:14
 msgid "Personal Data"
