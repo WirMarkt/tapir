@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-13 19:01+0200\n"
+"POT-Creation-Date: 2022-05-17 18:00+0200\n"
 "PO-Revision-Date: 2021-11-21 17:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -437,6 +437,7 @@ msgid "Account welcome email sent."
 msgstr "Willkommens-E-Mail für Nutzer:innenkonto gesendet."
 
 #: coop/forms.py:62 coop/models.py:272
+#: coop/templates/coop/draftuser_list.html:28
 msgid "Number of Shares"
 msgstr "Anzahl Anteile"
 
@@ -655,30 +656,32 @@ msgstr "Bewerber:innen"
 msgid "List of applicants"
 msgstr "Liste der Bewerber:innen"
 
-#: coop/templates/coop/draftuser_list.html:28
-msgid "Membership Agreement"
-msgstr "Beteiligungserklärung"
-
 #: coop/templates/coop/draftuser_list.html:29
-msgid "Entrance Fee"
-msgstr "Eintrittsgeld"
+msgid "Membership Agreement State"
+msgstr "Stand Beteiligungserklärung"
 
 #: coop/templates/coop/draftuser_list.html:30
-msgid "Shares"
-msgstr "Anteile"
+#, fuzzy
+#| msgid "Entrance Fee"
+msgid "Entrance Fee State"
+msgstr "Eintrittsgeld"
 
 #: coop/templates/coop/draftuser_list.html:31
+msgid "Shares State"
+msgstr "Stand Anteile"
+
+#: coop/templates/coop/draftuser_list.html:32
 #: log/templates/log/log_entry_list_tag.html:15
 #: shifts/templates/shifts/user_shift_account_log.html:26
 msgid "Date"
 msgstr "Datum"
 
-#: coop/templates/coop/draftuser_list.html:41
+#: coop/templates/coop/draftuser_list.html:45
 msgid "Signed"
 msgstr "Unterschrieben"
 
-#: coop/templates/coop/draftuser_list.html:46
-#: coop/templates/coop/draftuser_list.html:51
+#: coop/templates/coop/draftuser_list.html:50
+#: coop/templates/coop/draftuser_list.html:55
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:95
 msgid "Paid"
 msgstr "Bezahlt"
