@@ -221,9 +221,9 @@ SELECT2_I18N_PATH = "core/select2/4.0.13/js/i18n"
 
 WEASYPRINT_BASEURL = "/"
 
-REG_PERSON_BASE_DN = "ou=people,dc=wirmarkt,dc=de"
+REG_PERSON_BASE_DN = env("REG_PERSON_BASE_DN", default="ou=people,dc=wirmarkt,dc=de")
 REG_PERSON_OBJECT_CLASSES = ["inetOrgPerson", "organizationalPerson", "person"]
-REG_GROUP_BASE_DN = "ou=groups,dc=wirmarkt,dc=de"
+REG_GROUP_BASE_DN = env("REG_GROUP_BASE_DN", default="ou=groups,dc=wirmarkt,dc=de")
 REG_GROUP_OBJECT_CLASSES = ["groupOfNames"]
 
 # Groups are stored in the LDAP tree
