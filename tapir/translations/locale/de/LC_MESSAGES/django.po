@@ -2048,8 +2048,8 @@ msgid "Has qualifications: "
 msgstr "Hat Befähigungen: "
 
 #: shifts/templates/shifts/shift_detail.html:31
-msgid "Get printable version"
-msgstr "Druckversion erhalten"
+msgid "Print"
+msgstr "Drucken"
 
 #: shifts/templates/shifts/shift_detail.html:46
 msgid "Generated from"

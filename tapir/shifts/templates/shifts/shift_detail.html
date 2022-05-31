@@ -28,7 +28,7 @@
                     <span>
                     <a class="btn tapir-btn btn-outline-secondary"
                        href="{% url "shifts:shift_detail_printable" shift.pk %}">
-                        <span class="material-icons">print</span>{% translate 'Get printable version' %}
+                        <span class="material-icons">print</span>{% translate 'Print' %}
                     </a>
                     <a class="btn tapir-btn btn-outline-info" href="{% url "shifts:shift_edit" shift.pk %}"
                        id="shift_edit_button">
@@ -62,6 +62,7 @@
                 </li>
             {% endif %}
             <li class="list-group-item">
+            <div class="table-responsive">
                 <table class="table" id="attendance_table" aria-label="{% translate 'List of slots for this shift' %}">
                     <thead>
                     <tr>
@@ -269,6 +270,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
+            </div>
             </li>
         </ul>
     </div>
