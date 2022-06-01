@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-17 18:00+0200\n"
+"POT-Creation-Date: 2022-06-01 11:51+0200\n"
 "PO-Revision-Date: 2021-11-21 17:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -160,37 +160,6 @@ msgid "Welcome"
 msgstr "Willkommen"
 
 #: accounts/templates/accounts/email/welcome_email.html:43
-#, python-format
-msgid ""
-"\n"
-"        <p>Using your username <strong>%(username)s</strong>, you have "
-"access to several of our resources:</p>\n"
-"        <ul>\n"
-"            <li><a href=\"%(site_url)s\">%(coop_name)s member system</a></"
-"li>\n"
-"            <li><a href=\"https://wirmarkt.de/app\" target=\"_blank\">"
-"%(coop_name)s Community and Membership App</a></li>\n"
-"            <li><a href=\"https://rocketchat.wirmarkt.de\" target=\"_blank\">"
-"%(coop_name)s Chat</a> (chat system for communication across teams and "
-"between members)</li>\n"
-"        </ul>\n"
-"    "
-msgstr ""
-"\n"
-"        <p>Mit deinem Benutzernamen <strong>%(username)s</strong> hast du "
-"Zugang zu folgenden Ressourcen:</p>\n"
-"        <ul>\n"
-"            <li><a href=\"%(site_url)s\">%(coop_name)s Mitgliederverwaltung</"
-"a></li>\n"
-"            <li><a href=\"https://wirmarkt.de/app\" target=\"_blank\">"
-"%(coop_name)s Community und Mitglieder App</a></li>\n"
-"            <li><a href=\"https://rocketchat.wirmarkt.de\" target=\"_blank\">"
-"%(coop_name)s Chat</a> (Chat-System für Kommunikation in den AGs und "
-"zwischen Mitgliedern)</li>\n"
-"        </ul>\n"
-"    "
-
-#: accounts/templates/accounts/email/welcome_email.html:54
 #: coop/templates/coop/email/membership_application_welcome.html:29
 #: coop/templates/coop/email/membership_confirmation_welcome.html:63
 msgid ""
@@ -454,7 +423,23 @@ msgstr ""
 "mindestens einen Anteil übernehmen. Um den Aufbau der Genossenschaft zu "
 "unterstützen, kannst du freiwillig mehr Anteile übernehmen."
 
-#: coop/forms.py:82 coop/views/shareowner.py:232
+#: coop/forms.py:73
+msgid ""
+"I would like to join the membership list as an investing member (= "
+"sponsoring member)"
+msgstr ""
+"Ich möchte als investierendes Mitglied (= Fördermitglied) in die Mitgliederliste eingetragen werden"
+
+#: coop/forms.py:76
+msgid ""
+"<b>Note</b>: Investing members are sponsoring members. They have no voting "
+"rights in the General Assembly and cannot use the services of the "
+"cooperative that are exclusive to ordinary members. "
+msgstr ""
+"<b>Hinweis</b>: Investierende Mitglieder sind fördernde Mitglieder. Sie haben kein Stimmrecht in der "
+"Generalversammlung und können die für ordentliche Mitglieder exklusiven Leistungen der Genossenschaft nicht nutzen."
+
+#: coop/forms.py:91 coop/views/shareowner.py:232
 #, python-format
 msgid "Welcome at %(organisation_name)s!"
 msgstr "Willkommen bei %(organisation_name)s!"
@@ -694,7 +679,7 @@ msgstr "Bewerber:in anlegen"
 #: coop/templates/coop/draftuser_register_form.html:37
 #: shifts/templates/shifts/register_user_to_shift_slot.html:32
 #: shifts/templates/shifts/register_user_to_shift_slot_template.html:25
-#: shifts/templates/shifts/shift_detail.html:181
+#: shifts/templates/shifts/shift_detail.html:182
 #: shifts/templates/shifts/shift_template_detail.html:72
 msgid "Register"
 msgstr "Anmelden"
@@ -1252,7 +1237,7 @@ msgstr "Inaktiv"
 
 #: coop/templates/coop/user_coop_share_ownership_list_tag.html:53
 #: shifts/models.py:887 shifts/templates/shifts/shift_day_printable.html:56
-#: shifts/templates/shifts/shift_detail.html:200
+#: shifts/templates/shifts/shift_detail.html:201
 #: shifts/templates/shifts/shift_detail_printable.html:48
 msgid "Attended"
 msgstr "Teilgenommen"
@@ -1346,6 +1331,12 @@ msgstr ""
 "%(name)s hat kein Tapir-Konto. Kontaktiere eine Person aus dem Vorstand."
 
 #: coop/templates/coop/welcome_desk_share_owner.html:36
+#, fuzzy, python-format
+#| msgid ""
+#| "\n"
+#| "                            %(name)s has a negative shift balance "
+#| "(%(balance)s). Contact a member of the management\n"
+#| "                            team."
 msgid ""
 "\n"
 "                            %(name)s has a negative shift balance "
@@ -1690,22 +1681,22 @@ msgid "You found a stand-in!"
 msgstr "Vertretung gefunden!"
 
 #: shifts/models.py:888 shifts/templates/shifts/shift_day_printable.html:57
-#: shifts/templates/shifts/shift_detail.html:210
+#: shifts/templates/shifts/shift_detail.html:211
 #: shifts/templates/shifts/shift_detail_printable.html:49
 msgid "Missed"
 msgstr "Nicht erschienen"
 
 #: shifts/models.py:889 shifts/templates/shifts/shift_day_printable.html:58
-#: shifts/templates/shifts/shift_detail.html:240
+#: shifts/templates/shifts/shift_detail.html:241
 #: shifts/templates/shifts/shift_detail_printable.html:50
 msgid "Excused"
 msgstr "Entschuldigt"
 
-#: shifts/models.py:890 shifts/templates/shifts/shift_detail.html:248
+#: shifts/models.py:890 shifts/templates/shifts/shift_detail.html:249
 msgid "Cancelled"
 msgstr "Abgesagt"
 
-#: shifts/models.py:891 shifts/templates/shifts/shift_detail.html:232
+#: shifts/models.py:891 shifts/templates/shifts/shift_detail.html:233
 #: shifts/templates/shifts/shift_filters.html:57
 msgid "Looking for a stand-in"
 msgstr "Sucht Vertretung"
@@ -2059,57 +2050,57 @@ msgstr "Erzeugt von"
 msgid "This shift has been cancelled: "
 msgstr ""
 
-#: shifts/templates/shifts/shift_detail.html:65
+#: shifts/templates/shifts/shift_detail.html:66
 msgid "List of slots for this shift"
 msgstr "Liste der Slots für diese Schicht"
 
-#: shifts/templates/shifts/shift_detail.html:69
+#: shifts/templates/shifts/shift_detail.html:70
 #: shifts/templates/shifts/shift_template_detail.html:32
 msgid "Details"
 msgstr "Details"
 
-#: shifts/templates/shifts/shift_detail.html:70
+#: shifts/templates/shifts/shift_detail.html:71
 #: shifts/templates/shifts/shift_template_detail.html:33
 msgid "Registered user"
 msgstr "Angemeldete:r Nutzer:in"
 
-#: shifts/templates/shifts/shift_detail.html:71
+#: shifts/templates/shifts/shift_detail.html:72
 msgid "Attendance"
 msgstr "Anwesenheit"
 
-#: shifts/templates/shifts/shift_detail.html:72
+#: shifts/templates/shifts/shift_detail.html:73
 msgid "Actions"
 msgstr "Aktionen"
 
-#: shifts/templates/shifts/shift_detail.html:74
+#: shifts/templates/shifts/shift_detail.html:75
 msgid "Member-Office actions"
 msgstr "Mitgliederbüro Aktionen"
 
-#: shifts/templates/shifts/shift_detail.html:75
+#: shifts/templates/shifts/shift_detail.html:76
 msgid "Previous attendances"
 msgstr "Vorherige Anwesenheiten"
 
-#: shifts/templates/shifts/shift_detail.html:97
+#: shifts/templates/shifts/shift_detail.html:98
 msgid "since"
 msgstr "seit"
 
-#: shifts/templates/shifts/shift_detail.html:101
+#: shifts/templates/shifts/shift_detail.html:102
 msgid "Vacant"
 msgstr "Frei"
 
-#: shifts/templates/shifts/shift_detail.html:113
+#: shifts/templates/shifts/shift_detail.html:114
 msgid ""
 "Cancels the search for a stand-in. Use this if you want to attend the shift."
 msgstr ""
 "Beendet die Suche nach Vertretung. Benutze dies, wenn du die Schicht "
 "wahrnehmen möchtest."
 
-#: shifts/templates/shifts/shift_detail.html:115
-#: shifts/templates/shifts/shift_detail.html:221
+#: shifts/templates/shifts/shift_detail.html:116
+#: shifts/templates/shifts/shift_detail.html:222
 msgid "Cancel looking for a stand-in"
 msgstr "Beende die Suche nach Vertretung"
 
-#: shifts/templates/shifts/shift_detail.html:123
+#: shifts/templates/shifts/shift_detail.html:124
 #, python-format
 msgid ""
 "You can only look for a\n"
@@ -2125,11 +2116,11 @@ msgstr ""
 "Schicht nach einer Vertretung suchen. Wenn du die Schicht nicht wahrnehmen "
 "kannst, wende dich bitte schnellstmöglich an die Teamleitung."
 
-#: shifts/templates/shifts/shift_detail.html:135
+#: shifts/templates/shifts/shift_detail.html:136
 msgid "Look for a stand-in"
 msgstr "Suche nach Vertretung"
 
-#: shifts/templates/shifts/shift_detail.html:145
+#: shifts/templates/shifts/shift_detail.html:146
 #, python-format
 msgid ""
 "You can only unregister\n"
@@ -2148,11 +2139,11 @@ msgstr ""
 "nach einer Vertretung oder wende dich bitte schnellstmöglich an die "
 "Teamleitung."
 
-#: shifts/templates/shifts/shift_detail.html:159
+#: shifts/templates/shifts/shift_detail.html:160
 msgid "Unregister myself"
 msgstr "Melde mich ab"
 
-#: shifts/templates/shifts/shift_detail.html:164
+#: shifts/templates/shifts/shift_detail.html:165
 msgid ""
 "You can only register\n"
 "                                            yourself\n"
@@ -3423,3 +3414,33 @@ msgstr "Anfangsdatum muss gestzt sein"
 #: utils/models.py:362
 msgid "Start date must be prior to end date"
 msgstr "Anfangsdatum muss vor Enddatum sein"
+
+#, python-format
+#~ msgid ""
+#~ "\n"
+#~ "        <p>Using your username <strong>%(username)s</strong>, you have "
+#~ "access to several of our resources:</p>\n"
+#~ "        <ul>\n"
+#~ "            <li><a href=\"%(site_url)s\">%(coop_name)s member system</a></"
+#~ "li>\n"
+#~ "            <li><a href=\"https://wirmarkt.de/app\" target=\"_blank\">"
+#~ "%(coop_name)s Community and Membership App</a></li>\n"
+#~ "            <li><a href=\"https://rocketchat.wirmarkt.de\" target=\"_blank"
+#~ "\">%(coop_name)s Chat</a> (chat system for communication across teams and "
+#~ "between members)</li>\n"
+#~ "        </ul>\n"
+#~ "    "
+#~ msgstr ""
+#~ "\n"
+#~ "        <p>Mit deinem Benutzernamen <strong>%(username)s</strong> hast du "
+#~ "Zugang zu folgenden Ressourcen:</p>\n"
+#~ "        <ul>\n"
+#~ "            <li><a href=\"%(site_url)s\">%(coop_name)s "
+#~ "Mitgliederverwaltung</a></li>\n"
+#~ "            <li><a href=\"https://wirmarkt.de/app\" target=\"_blank\">"
+#~ "%(coop_name)s Community und Mitglieder App</a></li>\n"
+#~ "            <li><a href=\"https://rocketchat.wirmarkt.de\" target=\"_blank"
+#~ "\">%(coop_name)s Chat</a> (Chat-System für Kommunikation in den AGs und "
+#~ "zwischen Mitgliedern)</li>\n"
+#~ "        </ul>\n"
+#~ "    "

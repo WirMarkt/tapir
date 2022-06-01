@@ -68,6 +68,15 @@ class DraftUserRegisterForm(forms.ModelForm):
         )
         % {"share_price": COOP_SHARE_PRICE},
     )
+    is_investing = forms.BooleanField(
+        label=_(
+            "I would like to join the membership list as an investing member (= sponsoring member)"
+        ),
+        help_text=_(
+            "<b>Note</b>: Investing members are sponsoring members. They have no voting rights in the General "
+            "Assembly and cannot use the services of the cooperative that are exclusive to ordinary members. "
+        ),
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
