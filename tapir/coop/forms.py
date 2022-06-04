@@ -69,6 +69,8 @@ class DraftUserRegisterForm(forms.ModelForm):
         % {"share_price": COOP_SHARE_PRICE},
     )
     is_investing = forms.BooleanField(
+        initial=False,
+        required=False,
         label=_(
             "I would like to join the membership list as an investing member (= sponsoring member)"
         ),
@@ -129,6 +131,7 @@ class DraftUserRegisterForm(forms.ModelForm):
             "country",
             "preferred_language",
             "num_shares",
+            "is_investing",
         ]
         required = [
             "first_name",
