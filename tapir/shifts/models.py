@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import calendar
 import datetime
 import time
-import calendar
 
 from django.contrib.postgres.fields import ArrayField
 from django.core.mail import EmailMessage
@@ -29,6 +29,8 @@ class ShiftUserCapability:
     BREAD_DELIVERY = "bread_delivery"
     RED_CARD = "red_card"
     FIRST_AID = "first_aid"
+    WELCOME_SESSION = "welcome_session"
+    HANDLING_CHEESE = "handling_cheese"
 
 
 SHIFT_USER_CAPABILITY_CHOICES = {
@@ -38,6 +40,8 @@ SHIFT_USER_CAPABILITY_CHOICES = {
     ShiftUserCapability.BREAD_DELIVERY: _("Bread Delivery"),
     ShiftUserCapability.RED_CARD: _("Red Card"),
     ShiftUserCapability.FIRST_AID: _("First Aid"),
+    ShiftUserCapability.WELCOME_SESSION: _("Welcome Session"),
+    ShiftUserCapability.HANDLING_CHEESE: _("Handling Cheese"),
 }
 
 
@@ -66,6 +70,29 @@ SHIFT_SLOT_WARNING_CHOICES = {
         "I understand that I may need to work high, for example up a ladder. I do not suffer from fear of heigts."
     ),
 }
+
+
+class ShiftNames:
+    NAME_INT_PAIRS = [
+        {"name": "A", "index": 0},
+        {"name": "B", "index": 1},
+        {"name": "C", "index": 2},
+        {"name": "D", "index": 3},
+    ]
+
+    @staticmethod
+    def get_name(index: int) -> str | None:
+        for pair in ShiftNames.NAME_INT_PAIRS:
+            if pair["index"] == index:
+                return pair["name"]
+        return None
+
+    @staticmethod
+    def get_index(name: str) -> int | None:
+        for pair in ShiftNames.NAME_INT_PAIRS:
+            if pair["name"] == name:
+                return pair["index"]
+        return None
 
 
 class ShiftTemplateGroup(models.Model):
@@ -136,7 +163,9 @@ class ShiftTemplate(models.Model):
         null=True,
         on_delete=models.PROTECT,
     )
-    num_required_attendances = models.IntegerField(null=False, blank=False, default=3)
+    num_required_attendances = models.PositiveIntegerField(
+        null=False, blank=False, default=3
+    )
 
     # NOTE(Leon Handreke): This could be expanded in the future to allow more placement strategies
     # TODO(Leon Handreke): Extra validation to ensure that it is not blank if part of a group
@@ -276,22 +305,20 @@ class ShiftTemplate(models.Model):
         return deletion_warnings
 
     def add_slot_template(
-        self, slot_name: str, change_time: datetime.datetime
+        self,
+        slot_name: str,
+        change_time: datetime.datetime,
+        required_capabilities=None,
     ) -> ShiftSlotTemplate:
+        if required_capabilities is None:
+            required_capabilities = []
+
         slot_template = ShiftSlotTemplate.objects.create(
-            name=slot_name, shift_template=self
+            name=slot_name,
+            shift_template=self,
+            required_capabilities=required_capabilities,
         )
 
-        example_slot = self.slot_templates.filter(name=slot_name).first()
-        if example_slot is None:
-            example_slot = ShiftSlotTemplate.objects.filter(name=slot_name).first()
-        if example_slot:
-            slot_template.required_capabilities = example_slot.required_capabilities
-
-        if slot_name == "" or self.slot_templates.filter(name=slot_name).count() > 3:
-            slot_template.optional = True
-
-        slot_template.save()
         for shift in self.generated_shifts.filter(start_time__gt=change_time):
             slot_template.create_slot_from_template(shift)
 
@@ -428,9 +455,8 @@ class ShiftAttendanceTemplate(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        res = super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
         self.slot_template.update_future_slot_attendances()
-        return res
 
     def cancel_attendances(self, starting_from: datetime.datetime):
         for attendance in ShiftAttendance.objects.filter(
@@ -474,11 +500,29 @@ class Shift(models.Model):
 
     # TODO(Leon Handreke): For generated shifts, leave this blank instead and use a getter?
     name = models.CharField(blank=False, max_length=255)
-    num_required_attendances = models.IntegerField(null=True, blank=False, default=3)
-    description = models.TextField(blank=True, null=False, default="")
+    num_required_attendances = models.PositiveIntegerField(
+        verbose_name=_("Number of required attendances"),
+        help_text=_(
+            "If there are less members registered to a shift than that number, "
+            "it will be highlighted in the shift calendar."
+        ),
+        null=True,
+        blank=False,
+        default=3,
+    )
+    description = models.TextField(
+        verbose_name=_("Description"),
+        help_text=_("Is shown on the shift page below the title"),
+        blank=True,
+        null=False,
+        default="",
+    )
 
     start_time = models.DateTimeField(blank=False)
     end_time = models.DateTimeField(blank=False)
+
+    cancelled = models.BooleanField(default=False)
+    cancelled_reason = models.CharField(null=True, max_length=1000)
 
     NB_DAYS_FOR_SELF_UNREGISTER = 7
     NB_DAYS_FOR_SELF_LOOK_FOR_STAND_IN = 2
@@ -597,8 +641,20 @@ class ShiftSlot(models.Model):
 
     def get_required_capabilities_display(self):
         return ", ".join(
-            [str(SHIFT_USER_CAPABILITY_CHOICES[c]) for c in self.required_capabilities]
+            [
+                str(SHIFT_USER_CAPABILITY_CHOICES[capability])
+                for capability in self.required_capabilities
+            ]
         )
+
+    def get_required_capabilities_dict(self):
+        """
+        returns required capabilites as dictionary with corresponding translatiom
+        """
+        return {
+            capability: _(SHIFT_USER_CAPABILITY_CHOICES[capability])
+            for capability in self.required_capabilities
+        }
 
     def get_display_name(self):
         display_name = self.shift.get_display_name()
@@ -627,6 +683,7 @@ class ShiftSlot(models.Model):
             # User must have all required capabilities
             set(self.required_capabilities).issubset(user.shift_user_data.capabilities)
             and self.shift.is_in_the_future()
+            and not self.shift.cancelled
         )
 
     def user_can_self_unregister(self, user: TapirUser) -> bool:
@@ -655,7 +712,7 @@ class ShiftSlot(models.Model):
             and self.get_valid_attendance().user == user
         )
         early_enough = (
-            self.shift.start_time.date() - timezone.now().date()
+            self.shift.start_time - timezone.now()
         ).days >= Shift.NB_DAYS_FOR_SELF_LOOK_FOR_STAND_IN
         return user_is_registered_to_slot and early_enough
 
@@ -672,15 +729,22 @@ class ShiftSlot(models.Model):
             return
 
         attendance_template = self.slot_template.get_attendance_template()
-        if not attendance_template:
+        if (
+            not attendance_template
+            or self.get_valid_attendance()
+            or attendance_template.user.shift_user_data.is_currently_exempted_from_shifts(
+                self.shift.start_time.date()
+            )
+        ):
             return
 
-        # Create ShiftAttendance if slot not taken yet and user has not already cancelled
-        if (
-            not self.get_valid_attendance()
-            and not self.attendances.filter(user=attendance_template.user).exists()
-        ):
-            ShiftAttendance.objects.create(user=attendance_template.user, slot=self)
+        attendance = self.attendances.filter(user=attendance_template.user).first()
+        if attendance is None:
+            attendance = ShiftAttendance.objects.create(
+                user=attendance_template.user, slot=self
+            )
+        attendance.state = ShiftAttendance.State.PENDING
+        attendance.save()
 
     def mark_stand_in_found_if_relevant(self, actor: TapirUser):
         attendances = ShiftAttendance.objects.filter(
@@ -798,6 +862,36 @@ class ShiftAttendance(models.Model):
         return reverse(
             "shifts:update_shift_attendance_state_with_form", args=[self.pk, self.state]
         )
+
+    def update_shift_account_entry(self, entry_description=""):
+        if self.account_entry is not None:
+            previous_entry = self.account_entry
+            self.account_entry = None
+            self.save()
+            previous_entry.delete()
+
+        entry_value = None
+        if self.state == ShiftAttendance.State.MISSED:
+            entry_value = -1
+        elif self.state in [
+            ShiftAttendance.State.DONE,
+            ShiftAttendance.State.MISSED_EXCUSED,
+        ]:
+            entry_value = 1
+
+        if entry_value is None:
+            return
+
+        description = f"Shift {SHIFT_ATTENDANCE_STATES[self.state]} {self.slot.get_display_name()} {entry_description}"
+
+        entry = ShiftAccountEntry.objects.create(
+            user=self.user,
+            value=entry_value,
+            date=timezone.now(),
+            description=description,
+        )
+        self.account_entry = entry
+        self.save()
 
 
 @receiver(pre_save, sender=ShiftAttendance)

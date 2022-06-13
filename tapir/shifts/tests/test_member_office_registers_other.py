@@ -2,6 +2,7 @@ import datetime
 
 from django.urls import reverse
 
+from tapir.accounts.models import TapirUser
 from tapir.accounts.tests.factories.factories import TapirUserFactory
 from tapir.shifts.models import (
     ShiftSlot,
@@ -9,6 +10,8 @@ from tapir.shifts.models import (
     ShiftAttendance,
     ShiftSlotTemplate,
     ShiftAttendanceTemplate,
+    ShiftExemption,
+    ShiftTemplate,
 )
 from tapir.shifts.tests.factories import ShiftFactory, ShiftTemplateFactory
 from tapir.shifts.tests.utils import (
@@ -158,4 +161,73 @@ class TestMemberRegistersOther(TapirFactoryTestBase):
             ShiftAttendance.objects.get(slot__shift=shift_occupied).user,
             flying_user,
             "The flying user should be have kept their shift.",
+        )
+
+    def test_member_registers_after_unregister(self):
+        user = TapirUserFactory.create()
+        shift_template = ShiftTemplateFactory.create()
+        shift = shift_template.create_shift(
+            start_date=datetime.date.today() + datetime.timedelta(days=1)
+        )
+
+        self.login_as_member_office_user()
+        register_user_to_shift_template(self.client, user, shift_template)
+
+        attendance_template = ShiftAttendanceTemplate.objects.get(user=user)
+        self.client.post(
+            reverse(
+                "shifts:shift_attendance_template_delete", args=[attendance_template.id]
+            )
+        )
+
+        self.assertFalse(
+            ShiftAttendanceTemplate.objects.filter(user=user).exists(),
+            "The user should be unregistered from the ABCD shift.",
+        )
+        self.assertEqual(
+            ShiftAttendance.objects.get(user=user, slot__shift=shift).state,
+            ShiftAttendance.State.CANCELLED,
+            "After being unregistered from the ABCD shift, the attendance for the normal shift should be cancelled.",
+        )
+
+        response = register_user_to_shift_template(self.client, user, shift_template)
+        check_registration_successful_template(self, response, user, shift_template)
+        self.assertEqual(
+            ShiftAttendance.objects.get(user=user, slot__shift=shift).state,
+            ShiftAttendance.State.PENDING,
+            "After being re-registered to the ABCD shift, the user should also get his normal attendances back.",
+        )
+
+    def test_register_user_to_abcd_during_exemption(self):
+        user: TapirUser = TapirUserFactory.create()
+        shift_template: ShiftTemplate = ShiftTemplateFactory.create()
+        shift_1 = shift_template.create_shift(
+            start_date=datetime.date.today() + datetime.timedelta(days=10)
+        )
+        shift_2 = shift_template.create_shift(
+            start_date=datetime.date.today() + datetime.timedelta(days=30)
+        )
+        shift_3 = shift_template.create_shift(
+            start_date=datetime.date.today() + datetime.timedelta(days=50)
+        )
+
+        ShiftExemption.objects.create(
+            shift_user_data=user.shift_user_data,
+            start_date=datetime.date.today() + datetime.timedelta(days=20),
+            end_date=datetime.date.today() + datetime.timedelta(days=40),
+        )
+        self.login_as_member_office_user()
+        register_user_to_shift_template(self.client, user, shift_template)
+
+        self.assertTrue(
+            ShiftAttendance.objects.filter(user=user, slot__shift=shift_1).exists(),
+            "There first shift is before the exemption, it should have an attendance.",
+        )
+        self.assertFalse(
+            ShiftAttendance.objects.filter(user=user, slot__shift=shift_2).exists(),
+            "There second shift is during the exemption, it should not have an attendance.",
+        )
+        self.assertTrue(
+            ShiftAttendance.objects.filter(user=user, slot__shift=shift_3).exists(),
+            "There third shift is after the exemption, it should have an attendance.",
         )

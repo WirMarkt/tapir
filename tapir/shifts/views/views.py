@@ -22,7 +22,6 @@ from django_tables2.export import ExportMixin
 from tapir.accounts.models import TapirUser
 from tapir.log.util import freeze_for_log
 from tapir.shifts.forms import (
-    ShiftCreateForm,
     ShiftUserDataForm,
     CreateShiftAccountEntryForm,
 )
@@ -56,17 +55,6 @@ class SelectedUserViewMixin:
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["selected_user"] = self.get_selected_user()
-        return context
-
-
-class EditShiftView(PermissionRequiredMixin, UpdateView):
-    permission_required = "shifts.manage"
-    model = Shift
-    form_class = ShiftCreateForm
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["card_title"] = "Editing a shift"
         return context
 
 

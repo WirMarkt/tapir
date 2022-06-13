@@ -42,11 +42,6 @@ def get_sidebar_link_groups(request):
             material_icon="card_giftcard",
             url=reverse_lazy("coop:matching_program_list"),
         )
-        coop_group.add_link(
-            display_name=_("Statistics"),
-            material_icon="calculate",
-            url=reverse_lazy("coop:statistics"),
-        )
         groups.append(coop_group)
 
     if request.user.has_perm("welcomedesk.view"):
@@ -77,7 +72,9 @@ def get_sidebar_link_groups(request):
         url=reverse_lazy("shifts:shift_template_overview"),
     )
     shifts_group.add_link(
-        display_name=_(f"ABCD weeks calendar, current week: {current_week_group_name}"),
+        display_name=_(
+            "ABCD annual calendar, current week: {current_week_group_name}"
+        ).format(current_week_group_name=current_week_group_name),
         material_icon="table_view",
         url=reverse_lazy("shifts:shift_template_group_calendar"),
     )
@@ -94,17 +91,17 @@ def get_sidebar_link_groups(request):
             url=reverse_lazy("shifts:shift_exemption_list"),
         )
         shifts_group.add_link(
-            display_name=_("Shift statistics"),
-            material_icon="calculate",
-            url=reverse_lazy("shifts:statistics"),
-        )
-        shifts_group.add_link(
             display_name=_("Members on alert"),
             material_icon="priority_high",
             url=reverse_lazy("shifts:members_on_alert"),
         )
+        shifts_group.add_link(
+            display_name=_("Add a shift"),
+            material_icon="add_circle_outline",
+            url=reverse_lazy("shifts:create_shift"),
+        )
 
-    if FinancingCampaign.objects.exists():
+    if request.user.has_perm("shifts.manage") and FinancingCampaign.objects.exists():
         campaign_group = SidebarLinkGroup(name=_("Financing campaign"))
         groups.append(campaign_group)
         for campaign in FinancingCampaign.objects.all():
@@ -135,6 +132,16 @@ def get_sidebar_link_groups(request):
         display_name=_("Contact the member office"),
         material_icon="email",
         url="mailto:mitglied@supercoop.de",
+    )
+    misc_group.add_link(
+        display_name=_("Coop statistics"),
+        material_icon="calculate",
+        url=reverse_lazy("coop:statistics"),
+    )
+    misc_group.add_link(
+        display_name=_("Shift statistics"),
+        material_icon="calculate",
+        url=reverse_lazy("shifts:statistics"),
     )
     misc_group.add_link(
         display_name=_("About tapir"),

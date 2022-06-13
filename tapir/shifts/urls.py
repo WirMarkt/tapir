@@ -89,6 +89,16 @@ urlpatterns = [
         name="shift_template_group_calendar",
     ),
     path(
+        "group_calendar/<int:year>",
+        views.ShiftTemplateGroupCalendar.as_view(),
+        name="shift_template_group_calendar",
+    ),
+    path(
+        "group_calendar/<int:year>/pdf",
+        views.ShiftTemplateGroupCalendarAsPdf.as_view(),
+        name="calendarpdf",
+    ),
+    path(
         "shift_account_entry/log/<int:user_pk>",
         views.UserShiftAccountLog.as_view(),
         name="user_shift_account_log",
@@ -122,5 +132,25 @@ urlpatterns = [
         "members_on_alert",
         views.MembersOnAlertView.as_view(),
         name="members_on_alert",
+    ),
+    path(
+        "shift/<int:pk>/cancel",
+        views.CancelShiftView.as_view(),
+        name="cancel_shift",
+    ),
+    path(
+        "shift/create",
+        views.ShiftCreateView.as_view(),
+        name="create_shift",
+    ),
+    path(
+        "shift/<int:shift_pk>/slot/create",
+        views.ShiftSlotCreateView.as_view(),
+        name="create_slot",
+    ),
+    path(
+        "slot/<int:pk>/edit",
+        views.ShiftSlotEditView.as_view(),
+        name="edit_slot",
     ),
 ]
