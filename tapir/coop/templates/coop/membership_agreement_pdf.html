@@ -39,7 +39,7 @@
     </div>
     <div style="flex-grow: 1"></div>
     <div style="margin-top: 13mm;">
-        <img src="{% static "core/images/Logo_dark.svg" %}" style="width: 60mm;"/>
+        <img alt="Logo" src="{% static "core/images/Logo_dark.svg" %}" style="width: 60mm;"/>
     </div>
 </div>
 
@@ -120,7 +120,7 @@
             in Höhe von <strong>{{ share_price|floatformat:2 }} Euro je Geschäftsanteil</strong> zu leisten.
             {% if entry_amount > 0 %}
                 Hinzu kommt das Eintrittsgeld in Höhe von {{ entry_amount|floatformat:2 }} Euro zu leisten, das der
-                Deckung von Verwaltungskosten dient
+                Deckung von Verwaltungskosten dient.
             {% endif %}
             Insgesamt verpflichte ich mich daher,
             <span style="display: inline-block; width: 20mm; border-bottom: 2px solid black; text-align: center;">

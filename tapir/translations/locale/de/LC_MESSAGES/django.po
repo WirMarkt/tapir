@@ -523,10 +523,6 @@ msgstr ""
 "Der für einen Anteil gezahlte Betrag kann nicht höher sein als "
 "%(share_price)s (der Preis eines Anteils)"
 
-#: coop/models.py:273
-msgid "Number of Shares"
-msgstr "Anzahl an Anteilen"
-
 #: coop/models.py:276
 msgid "Investing member"
 msgstr "Investierendes Mitglied"
@@ -1318,12 +1314,6 @@ msgstr ""
 "%(name)s hat kein Tapir-Konto. Kontaktiere eine Person aus dem Vorstand."
 
 #: coop/templates/coop/welcome_desk_share_owner.html:36
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "                            %(name)s has a negative shift balance "
-#| "(%(balance)s). Contact a member of the management\n"
-#| "                            team."
 msgid ""
 "\n"
 "                            %(name)s has a negative shift balance "
@@ -2131,20 +2121,6 @@ msgid "Unregister myself"
 msgstr "Melde mich ab"
 
 #: shifts/templates/shifts/shift_detail.html:164
-#, fuzzy
-#| msgid ""
-#| "You can only register\n"
-#| "                                                yourself\n"
-#| "                                                for a shift if:<br/>\n"
-#| "                                                -You are not registered "
-#| "to another slot in that shift<br/>\n"
-#| "                                                -You have the required "
-#| "qualification (if you want to get a\n"
-#| "                                                qualification, contact "
-#| "the member office)<br/>\n"
-#| "                                                -The shift is in the "
-#| "future<br/>\n"
-#| "                                            "
 msgid ""
 "You can only register\n"
 "                                            yourself\n"
