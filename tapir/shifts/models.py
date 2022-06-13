@@ -30,6 +30,7 @@ class ShiftUserCapability:
     RED_CARD = "red_card"
     FIRST_AID = "first_aid"
     WELCOME_SESSION = "welcome_session"
+    HANDLING_CHEESE = "handling_cheese"
 
 
 SHIFT_USER_CAPABILITY_CHOICES = {
@@ -40,6 +41,7 @@ SHIFT_USER_CAPABILITY_CHOICES = {
     ShiftUserCapability.RED_CARD: _("Red Card"),
     ShiftUserCapability.FIRST_AID: _("First Aid"),
     ShiftUserCapability.WELCOME_SESSION: _("Welcome Session"),
+    ShiftUserCapability.HANDLING_CHEESE: _("Handling Cheese"),
 }
 
 
@@ -161,7 +163,9 @@ class ShiftTemplate(models.Model):
         null=True,
         on_delete=models.PROTECT,
     )
-    num_required_attendances = models.IntegerField(null=False, blank=False, default=3)
+    num_required_attendances = models.PositiveIntegerField(
+        null=False, blank=False, default=3
+    )
 
     # NOTE(Leon Handreke): This could be expanded in the future to allow more placement strategies
     # TODO(Leon Handreke): Extra validation to ensure that it is not blank if part of a group
@@ -301,22 +305,20 @@ class ShiftTemplate(models.Model):
         return deletion_warnings
 
     def add_slot_template(
-        self, slot_name: str, change_time: datetime.datetime
+        self,
+        slot_name: str,
+        change_time: datetime.datetime,
+        required_capabilities=None,
     ) -> ShiftSlotTemplate:
+        if required_capabilities is None:
+            required_capabilities = []
+
         slot_template = ShiftSlotTemplate.objects.create(
-            name=slot_name, shift_template=self
+            name=slot_name,
+            shift_template=self,
+            required_capabilities=required_capabilities,
         )
 
-        example_slot = self.slot_templates.filter(name=slot_name).first()
-        if example_slot is None:
-            example_slot = ShiftSlotTemplate.objects.filter(name=slot_name).first()
-        if example_slot:
-            slot_template.required_capabilities = example_slot.required_capabilities
-
-        if slot_name == "" or self.slot_templates.filter(name=slot_name).count() > 3:
-            slot_template.optional = True
-
-        slot_template.save()
         for shift in self.generated_shifts.filter(start_time__gt=change_time):
             slot_template.create_slot_from_template(shift)
 
@@ -498,8 +500,23 @@ class Shift(models.Model):
 
     # TODO(Leon Handreke): For generated shifts, leave this blank instead and use a getter?
     name = models.CharField(blank=False, max_length=255)
-    num_required_attendances = models.IntegerField(null=True, blank=False, default=3)
-    description = models.TextField(blank=True, null=False, default="")
+    num_required_attendances = models.PositiveIntegerField(
+        verbose_name=_("Number of required attendances"),
+        help_text=_(
+            "If there are less members registered to a shift than that number, "
+            "it will be highlighted in the shift calendar."
+        ),
+        null=True,
+        blank=False,
+        default=3,
+    )
+    description = models.TextField(
+        verbose_name=_("Description"),
+        help_text=_("Is shown on the shift page below the title"),
+        blank=True,
+        null=False,
+        default="",
+    )
 
     start_time = models.DateTimeField(blank=False)
     end_time = models.DateTimeField(blank=False)
@@ -624,8 +641,20 @@ class ShiftSlot(models.Model):
 
     def get_required_capabilities_display(self):
         return ", ".join(
-            [str(SHIFT_USER_CAPABILITY_CHOICES[c]) for c in self.required_capabilities]
+            [
+                str(SHIFT_USER_CAPABILITY_CHOICES[capability])
+                for capability in self.required_capabilities
+            ]
         )
+
+    def get_required_capabilities_dict(self):
+        """
+        returns required capabilites as dictionary with corresponding translatiom
+        """
+        return {
+            capability: _(SHIFT_USER_CAPABILITY_CHOICES[capability])
+            for capability in self.required_capabilities
+        }
 
     def get_display_name(self):
         display_name = self.shift.get_display_name()
@@ -683,7 +712,7 @@ class ShiftSlot(models.Model):
             and self.get_valid_attendance().user == user
         )
         early_enough = (
-            self.shift.start_time.date() - timezone.now().date()
+            self.shift.start_time - timezone.now()
         ).days >= Shift.NB_DAYS_FOR_SELF_LOOK_FOR_STAND_IN
         return user_is_registered_to_slot and early_enough
 
