@@ -5,10 +5,34 @@
     margin-right: 20mm;
 }
 
+@font-face {
+    font-family: 'Jost';
+    font-style: normal;
+    src: url(/static/core/fonts/Jost-VariableFont_wght.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    src: url(/static/core/fonts/Inter-VariableFont_slnt,wght.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'Jost';
+    font-style: italic;
+    src: url(/static/core/fonts/Jost-Italic-VariableFont_wght.ttf) format('truetype');
+}
+
 html {
-    font-family: sans-serif;
+    font-family: 'Jost', sans-serif;
     font-size: 9pt;
-    line-height: 1.4;
+    line-height: 1.3;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    text-transform: uppercase;
+    font-style: normal !important;
+    font-family: 'Inter', sans-serif;
 }
 
 @font-face {
@@ -23,7 +47,7 @@ html {
 }
 
 .material-icons {
-  font-family: 'Material Icons';
+  font-family: 'Material Icons', monospace;
   font-weight: normal;
   font-style: normal;
   font-size: 24px;  /* Preferred icon size */
@@ -45,4 +69,8 @@ html {
 
   /* Support for IE. */
   font-feature-settings: 'liga';
+}
+
+a {
+    white-space: nowrap;
 }
