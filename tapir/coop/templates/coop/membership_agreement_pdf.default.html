@@ -102,13 +102,13 @@
     </div>
 
     <div style="display: flex; flex-direction: row; margin-top: 10mm;">
-        <div style="margin-right: 8mm; width: 5mm;">
+        <div class="option-box">
             <span style="position: absolute; left: 2mm;" class="material-icons">check_box_outline_blank</span>
             {% if owner and not owner.share_ownerships%}
             <span style="position: absolute; left: 2mm;" class="material-icons">close</span>
             {% endif %}
         </div>
-        <div style="flex: 1">
+        <div class="option-details">
             Ich beantrage hiermit die Aufnahme in die <strong>Organisation</strong>. Ich möchte mich mit insgesamt
             <span style="display: inline-block; width: 20mm; border-bottom: 2px solid black; text-align: center;">{{ owner.num_shares }}</span>
             Anteil(en) an der Genossenschaft beteiligen. Ich verpflichte mich, die nach Satzung und Gesetz vorgesehenen Zahlungen
@@ -123,13 +123,13 @@
     </div>
 
     <div style="display: flex; flex-direction: row; margin-top: 5mm;">
-        <div style="margin-right: 8mm; width: 5mm;">
+        <div class="option-box">
             <span class="material-icons">check_box_outline_blank</span>
             {% if owner.share_ownerships %}
                 <span style="position: absolute; left: 2mm;" class="material-icons">close</span>
             {% endif %}
         </div>
-        <div style="flex: 1">
+        <div class="option-details">
             Ich bin Mitglied der <strong>Organisation</strong> und möchte mich mit
             <span style="display: inline-block; width: 10mm; border-bottom: 2px solid black; text-align: center;">
                 {{ num_additional_shares }}
@@ -143,13 +143,13 @@
     </div>
 
     <div style="display: flex; flex-direction: row; margin-top: 5mm;">
-        <div style="margin-right: 8mm; width: 5mm;">
+        <div class="option-box">
             <span class="material-icons">check_box_outline_blank</span>
             {% if owner.is_investing %}
                 <span style="position: absolute; left: 2mm;" class="material-icons">close</span>
             {% endif %}
         </div>
-        <div style="flex: 1">
+        <div class="option-details">
             Ich möchte als investierendes Mitglied (= Fördermitglied) in die Mitgliederliste eingetragen werden.<br />
             <b>Hinweis</b>: Investierende Mitglieder sind fördernde Mitglieder. Sie haben kein Stimmrecht in der
             Generalversammlung und können die Leistungen der Genossenschaft nicht nutzen.
@@ -157,13 +157,13 @@
     </div>
 
     <div style="display: flex; flex-direction: row; margin-top: 5mm;">
-        <div style="margin-right: 8mm; width: 5mm;">
+        <div class="option-box">
             <span style="position: absolute; left: 2mm;" class="material-icons">check_box_outline_blank</span>
             {% if owner %}
             <span style="position: absolute; left: 2mm;" class="material-icons">close</span>
             {% endif %}
         </div>
-        <div style="flex: 1">
+        <div class="option-details">
             Ich nehme zur Kenntnis, dass die Satzung eine Kündigungsfrist von <strong>3 Jahren zum Ende des Geschäftsjahres</strong>
             bestimmt. Die lange Laufzeit dient zur finanziellen Stabilität und ist ein wesentlicher Kern des
             Genossenschaftsprinzips, das auf langfristige Ziele ausgerichtet ist. Eine Übertragung von Geschäftsanteilen
@@ -171,13 +171,13 @@
         </div>
     </div>
     <div style="display: flex; flex-direction: row; margin-top: 5mm;">
-        <div style="margin-right: 8mm; width: 5mm;">
+        <div class="option-box">
             <span class="material-icons">check_box_outline_blank</span>
             {% if owner.ratenzahlung %}
                 <span style="position: absolute; left: 2mm;" class="material-icons">close</span>
             {% endif %}
         </div>
-        <div style="flex: 1">
+        <div class="option-details">
             <span style="display: inline-block; width: 100mm; border-bottom: 2px solid black; text-align: center;">
             {% if owner.ratenzahlung %}
                 Ratenzahlung
@@ -187,13 +187,13 @@
         </div>
     </div>
     <div style="display: flex; flex-direction: row; margin-top: 5mm;">
-        <div style="margin-right: 8mm; width: 5mm;">
+        <div class="option-box">
             <span class="material-icons">check_box_outline_blank</span>
             {% if owner %}
             <span style="position: absolute; left: 2mm;" class="material-icons">close</span>
             {% endif %}
         </div>
-        <div style="flex: 1">
+        <div class="option-details">
             Ich werde meine (Rest-)Zahlungen per Überweisung leisten und auf folgendes Konto überweisen: <br />
             <div style="margin-left: 10mm; line-height: 1.2; margin-top: 3mm;">
                 Kontoinhaber: <strong>Organisation</strong><br />
