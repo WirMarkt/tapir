@@ -221,16 +221,24 @@ def send_shareowner_membership_confirmation_welcome_email(request, pk):
             "coop/email/membership_confirmation_welcome_investing.html",
             "coop/email/membership_confirmation_welcome_investing.default.html",
         ]
+        subject = f"Bestätigung der Fördernitgliedschaft bei {settings.COOP_NAME}"
     else:
         template_names = [
             "coop/email/membership_confirmation_welcome.html",
             "coop/email/membership_confirmation_welcome.default.html",
         ]
+        subject = "Welcome at %(organisation_name)s!"
 
     with translation.override(owner.get_info().preferred_language):
+        subject = _("Welcome at %(organisation_name)s!") % {
+            "organisation_name": settings.COOP_NAME
+        }
+        if owner.is_investing:
+            subject = _(
+                "Confirmation of the investing membership at %(organisation_name)s!"
+            ) % {"organisation_name": settings.COOP_NAME}
         mail = EmailMessage(
-            subject=_("Welcome at %(organisation_name)s!")
-            % {"organisation_name": settings.COOP_NAME},
+            subject=subject,
             body=render_to_string(template_names, {"owner": owner}),
             from_email=FROM_EMAIL_MEMBER_OFFICE,
             to=[owner.get_info().email],
@@ -480,11 +488,11 @@ class ShareOwnerFilter(django_filters.FilterSet):
         if value.isdigit():
             return queryset.filter(id=int(value))
 
-        return queryset.with_name(value)
+        return queryset.with_name(value).distinct()
 
     @staticmethod
     def status_filter(queryset: ShareOwner.ShareOwnerQuerySet, name, value: str):
-        return queryset.with_status(value)
+        return queryset.with_status(value).distinct()
 
     @staticmethod
     def shift_attendance_mode_filter(
@@ -492,7 +500,7 @@ class ShareOwnerFilter(django_filters.FilterSet):
     ):
         return queryset.filter(
             user__in=TapirUser.objects.with_shift_attendance_mode(value)
-        )
+        ).distinct()
 
     @staticmethod
     def registered_to_slot_with_capability_filter(
@@ -500,31 +508,35 @@ class ShareOwnerFilter(django_filters.FilterSet):
     ):
         return queryset.filter(
             user__in=TapirUser.objects.registered_to_shift_slot_with_capability(value)
-        )
+        ).distinct()
 
     @staticmethod
     def has_capability_filter(
         queryset: ShareOwner.ShareOwnerQuerySet, name, value: str
     ):
-        return queryset.filter(user__in=TapirUser.objects.has_capability(value))
+        return queryset.filter(
+            user__in=TapirUser.objects.has_capability(value)
+        ).distinct()
 
     @staticmethod
     def not_has_capability_filter(
         queryset: ShareOwner.ShareOwnerQuerySet, name, value: str
     ):
-        return queryset.exclude(user__in=TapirUser.objects.has_capability(value))
+        return queryset.exclude(
+            user__in=TapirUser.objects.has_capability(value)
+        ).distinct()
 
     @staticmethod
     def has_tapir_account_filter(
         queryset: ShareOwner.ShareOwnerQuerySet, name, value: bool
     ):
-        return queryset.exclude(user__isnull=value)
+        return queryset.exclude(user__isnull=value).distinct()
 
     @staticmethod
     def abcd_week_filter(queryset: ShareOwner.ShareOwnerQuerySet, name, value: str):
         return queryset.filter(
             user__shift_attendance_templates__slot_template__shift_template__group__name=value
-        )
+        ).distinct()
 
     @staticmethod
     def has_unpaid_shares_filter(
@@ -535,9 +547,9 @@ class ShareOwnerFilter(django_filters.FilterSet):
         )
 
         if value:
-            return queryset.filter(share_ownerships__in=unpaid_shares)
+            return queryset.filter(share_ownerships__in=unpaid_shares).distinct()
         else:
-            return queryset.exclude(share_ownerships__in=unpaid_shares)
+            return queryset.exclude(share_ownerships__in=unpaid_shares).distinct()
 
 
 class ShareOwnerListView(
