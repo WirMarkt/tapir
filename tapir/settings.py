@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     # TODO(Leon Handreke): Don't install in prod
     "django_extensions",
+    "chartjs",
 ]
 
 if ENABLE_SILK_PROFILING:
