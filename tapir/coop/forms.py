@@ -5,7 +5,12 @@ from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
 from tapir import settings
-from tapir.coop.config import COOP_SHARE_PRICE
+from tapir.coop.config import (
+    COOP_SHARE_PRICE,
+    COOP_MIN_SHARES,
+    COOP_MAX_SHARES,
+    COOP_DEFAULT_SHARES,
+)
 from tapir.coop.models import ShareOwnership, DraftUser, ShareOwner, FinancingCampaign
 from tapir.coop.pdfs import get_membership_agreement_pdf
 from tapir.settings import FROM_EMAIL_MEMBER_OFFICE
@@ -60,7 +65,9 @@ class DraftUserRegisterForm(forms.ModelForm):
     phone_number = TapirPhoneNumberField()
     num_shares = forms.IntegerField(
         label=_("Number of Shares"),
-        min_value=1,
+        initial=COOP_DEFAULT_SHARES,
+        min_value=COOP_MIN_SHARES,
+        max_value=COOP_MAX_SHARES,
         help_text=_(
             "Number of shares you would like to purchase. The price of one share is EUR %(share_price)s. "
             "You need to purchase at least one share to become member of the cooperative. "
