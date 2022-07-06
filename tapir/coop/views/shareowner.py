@@ -320,7 +320,10 @@ class ShareOwnerTable(django_tables2.Table):
             "display_name",
             "first_name",
             "last_name",
+            "street",
             "postcode",
+            "city",
+            "country",
             "status",
             "attended_welcome_session",
             "ratenzahlung",
@@ -333,7 +336,10 @@ class ShareOwnerTable(django_tables2.Table):
     )
     first_name = django_tables2.Column(empty_values=(), orderable=False, visible=False)
     last_name = django_tables2.Column(empty_values=(), orderable=False, visible=False)
+    street = django_tables2.Column(empty_values=(), orderable=False, visible=False)
     postcode = django_tables2.Column(empty_values=(), orderable=False, visible=False)
+    city = django_tables2.Column(empty_values=(), orderable=False, visible=False)
+    country = django_tables2.Column(empty_values=(), orderable=False, visible=False)
     status = django_tables2.Column(empty_values=(), orderable=False)
     email = django_tables2.Column(empty_values=(), orderable=False, visible=False)
     phone_number = django_tables2.Column(
@@ -375,6 +381,30 @@ class ShareOwnerTable(django_tables2.Table):
     @staticmethod
     def render_postcode(value, record: ShareOwner):
         return record.get_info().postcode
+
+    @staticmethod
+    def value_street(value, record: ShareOwner):
+        return record.get_info().street
+
+    @staticmethod
+    def render_street(value, record: ShareOwner):
+        return record.get_info().street
+
+    @staticmethod
+    def value_city(value, record: ShareOwner):
+        return record.get_info().city
+
+    @staticmethod
+    def render_city(value, record: ShareOwner):
+        return record.get_info().city
+
+    @staticmethod
+    def value_country(value, record: ShareOwner):
+        return record.get_info().country
+
+    @staticmethod
+    def render_country(value, record: ShareOwner):
+        return record.get_info().country
 
     @staticmethod
     def render_status(value, record: ShareOwner):
