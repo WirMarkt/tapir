@@ -228,7 +228,7 @@
                 Kontoinhaber: <strong>WirMarkt Supermarkt Hamburg eG i.G.</strong><br/>
                 IBAN: <span style="font-family: monospace">DE28 4306 0967 1280 1809 00</span><br/>
                 BIC: <span style="font-family: monospace">GENODEM1GLS</span><br/>
-                Betreff: <span style="font-family: monospace">Anteil {{ owner.first_name }} {{ owner.last_name }}</span>
+                Betreff: <span style="font-family: monospace">Anteil{% if entry_amount > 0 %} und Eintrittsgeld{% endif %} {{ owner.first_name }} {{ owner.last_name }}</span>
             </div>
         </div>
     </div>
