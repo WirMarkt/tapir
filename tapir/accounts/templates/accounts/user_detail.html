@@ -19,7 +19,7 @@
 
 {% block content %}
     <div class="row">
-        <div class="col-md-6 p-0">
+        <div class="col-md-6">
             <div class="card m-2" id="tapir_user_detail_card">
                 <h5 class="card-header">
                     {% translate "Personal Data" %}
@@ -119,6 +119,7 @@
         </div>
     </div>
 
+    <div class="row">
         <div class="col-md-6 p-0">
             {% user_shifts_overview object %}
         </div>
