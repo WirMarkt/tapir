@@ -67,6 +67,7 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="{% url "shifts:calendar_future" %}">{% translate "Shift calendar" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url "shifts:create_shift" %}">{% translate "Add a shift" %}</a></li>
                         <li><a class="dropdown-item" href="{% url "shifts:shift_template_overview" %}">{% translate "ABCD week-plan" %}</a></li>
                         <li>
                             <a class="dropdown-item" href="{% url "shifts:shift_template_group_calendar" %}">
@@ -88,11 +89,6 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url "shifts:shift_template_group_calendar" %}">
                         {% translate "ABCD calendar" %}
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url "shifts:create_shift" %}">
-                        {% translate "Add a shift" %}
                     </a>
                 </li>
                 {% endif %}
