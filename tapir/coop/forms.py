@@ -1,5 +1,7 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
+from django.forms import DateField, IntegerField
 from django.template.loader import render_to_string
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
@@ -11,10 +13,17 @@ from tapir.coop.config import (
     COOP_MAX_SHARES,
     COOP_DEFAULT_SHARES,
 )
-from tapir.coop.models import ShareOwnership, DraftUser, ShareOwner, FinancingCampaign
+from tapir.coop.models import (
+    ShareOwnership,
+    DraftUser,
+    ShareOwner,
+    FinancingCampaign,
+    IncomingPayment,
+)
 from tapir.coop.pdfs import get_membership_agreement_pdf
 from tapir.settings import FROM_EMAIL_MEMBER_OFFICE
-from tapir.utils.forms import DateInput, TapirPhoneNumberField
+from tapir.shifts.forms import ShareOwnerChoiceField
+from tapir.utils.forms import DateInputTapir, TapirPhoneNumberField
 
 
 class ShareOwnershipForm(forms.ModelForm):
@@ -26,9 +35,42 @@ class ShareOwnershipForm(forms.ModelForm):
             "amount_paid",
         ]
         widgets = {
-            "start_date": DateInput(),
-            "end_date": DateInput(),
+            "start_date": DateInputTapir(),
+            "end_date": DateInputTapir(),
         }
+
+
+class ShareOwnershipCreateMultipleForm(forms.Form):
+    start_date = DateField(
+        label=_("Start date"),
+        required=True,
+        widget=DateInputTapir,
+        help_text=_(
+            "Usually, the date on the membership agreement, or today. "
+            "In the case of sold or gifted shares, can be set in the future."
+        ),
+    )
+    end_date = DateField(
+        label=_("End date"),
+        required=False,
+        widget=DateInputTapir,
+        help_text=_(
+            "Usually left empty. "
+            "Can be set to a point in the future "
+            "if it is already known that the shares will be transferred to another member in the future."
+        ),
+    )
+    num_shares = IntegerField(
+        label=_("Number of shares to create"), required=True, min_value=1
+    )
+
+    def clean_end_date(self):
+        if (
+            self.cleaned_data["end_date"]
+            and self.cleaned_data["end_date"] < self.cleaned_data["start_date"]
+        ):
+            raise ValidationError(_("The end date must be later than the start date."))
+        return self.cleaned_data["end_date"]
 
 
 class DraftUserForm(forms.ModelForm):
@@ -57,7 +99,7 @@ class DraftUserForm(forms.ModelForm):
             "num_shares",
         ]
         widgets = {
-            "birthdate": DateInput(),
+            "birthdate": DateInputTapir(),
         }
 
 
@@ -153,7 +195,7 @@ class DraftUserRegisterForm(forms.ModelForm):
             "preferred_language",
             "num_shares",
         ]
-        widgets = {"birthdate": DateInput()}
+        widgets = {"birthdate": DateInputTapir()}
 
 
 class ShareOwnerForm(forms.ModelForm):
@@ -182,8 +224,8 @@ class ShareOwnerForm(forms.ModelForm):
             "willing_to_gift_a_share",
         ]
         widgets = {
-            "birthdate": DateInput(),
-            "willing_to_gift_a_share": DateInput(),
+            "birthdate": DateInputTapir(),
+            "willing_to_gift_a_share": DateInputTapir(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -228,3 +270,28 @@ class FinancingCampaignForm(forms.ModelForm):
             source.raised_amount = self.cleaned_data[f"financing_source_{source.id}"]
             source.save()
         return super().save(commit=commit)
+
+
+class IncomingPaymentForm(forms.ModelForm):
+    class Meta:
+        model = IncomingPayment
+        fields = [
+            "paying_member",
+            "credited_member",
+            "amount",
+            "payment_date",
+            "comment",
+        ]
+        widgets = {
+            "payment_date": DateInputTapir(),
+            "creation_date": DateInputTapir(),
+        }
+
+    paying_member = ShareOwnerChoiceField()
+    credited_member = ShareOwnerChoiceField(
+        help_text=_(
+            "Usually, the credited member is the same as the paying member. "
+            "Only if a person if gifting another person a share through the matching program, "
+            "then the fields can be different."
+        )
+    )
