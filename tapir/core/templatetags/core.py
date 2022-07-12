@@ -121,22 +121,22 @@ def get_sidebar_link_groups(request):
     misc_group.add_link(
         display_name=_("Wiki"),
         material_icon="feed",
-        url="https://wiki.supercoop.de",
+        url="https://wirmarkt.de",
     )
     misc_group.add_link(
         display_name=_("Member manual"),
         material_icon="menu_book",
-        url="https://wiki.supercoop.de/wiki/Member_Manual",
+        url="https://wirmarkt.de",
     )
     misc_group.add_link(
         display_name=_("Shop opening hours"),
         material_icon="access_time",
-        url="https://wiki.supercoop.de/wiki/%C3%96ffnungszeiten",
+        url="https://wirmarkt.de",
     )
     misc_group.add_link(
         display_name=_("Contact the member office"),
         material_icon="email",
-        url="mailto:mitglied@supercoop.de",
+        url="mailto:office@wirmarkt.de.de",
     )
     misc_group.add_link(
         display_name=_("Coop statistics"),
