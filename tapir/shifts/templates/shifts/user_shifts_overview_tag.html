@@ -1,13 +1,13 @@
 {% load i18n %}
 {% load shifts %}
 
-<div class="card mb-2">
+<div class="card m-2">
     <h5 class="card-header d-flex justify-content-between align-items-center flex-wrap" id="user_shift_card">
         {% translate "Shifts" %}
         {% if perms.shifts.manage and user.shift_user_data %}
-            <a class="btn tapir-btn btn-outline-info" id="edit_shift_user_data_button"
+            <a class="btn btn-sm btn-outline-info" id="edit_shift_user_data_button"
                href="{% url 'shifts:edit_shift_user_data' user.shift_user_data.pk %}">
-                <span class="material-icons button-icon">edit</span>{% translate 'Edit' %}
+                {% translate 'Edit' %}
             </a>
         {% endif %}
     </h5>
@@ -22,8 +22,8 @@
                         <form style="display: inline;" method="POST"
                               action="{% url 'shifts:set_user_attendance_mode_regular' user.pk %}">
                             {% csrf_token %}
-                            <button type="submit" class="btn tapir-btn btn-secondary btn-sm">
-                                {% translate "Set ABCD 🏠️" %}
+                            <button type="submit" class="btn btn-secondary btn-sm">
+                                {% translate "Set ABCD" %}
                             </button>
                         </form>
                     {% endif %}
@@ -68,8 +68,8 @@
                             <form style="display: inline;" method="POST"
                                   action="{% url 'shifts:set_user_attendance_mode_flying' user.pk %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn tapir-btn btn-secondary btn-sm">
-                                    {% translate "Set Flying️" %} ✈
+                                <button type="submit" class="btn btn-secondary btn-sm">
+                                    {% translate "Set Flying️" %}
                                 </button>
                             </form>
                         {% endif %}
@@ -119,7 +119,7 @@
                     <span class="text-danger">{% translate "On alert" %} ({{ user.shift_user_data.get_account_balance|stringformat:"+d" }})</span>
                 {% endif %}
                 <a href="{% url 'shifts:user_shift_account_log' user.pk %}"
-                   class="btn tapir-btn btn-sm btn-outline-secondary"><span class="material-icons">visibility</span>{% translate 'log' %}</a>
+                   class="btn btn-sm btn-outline-secondary">{% translate 'log' %}</a>
             </div>
         </div>
 
@@ -150,8 +150,7 @@
                         {% endif %}
                     {% endwith %}
                 </span>
-                <a href="{% url 'shifts:shift_exemption_list' %}?shift_user_data_id={{ user.shift_user_data.id }}" class="btn tapir-btn btn-sm btn-outline-secondary" id="shift_exemption_list_button">
-                    <span class="material-icons">visibility</span>
+                <a href="{% url 'shifts:shift_exemption_list' %}?shift_user_data_id={{ user.shift_user_data.id }}" class="btn btn-sm btn-outline-secondary" id="shift_exemption_list_button">
                     {% translate 'View all' %}
                 </a>
             </div>
