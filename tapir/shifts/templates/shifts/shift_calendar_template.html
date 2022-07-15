@@ -26,7 +26,7 @@
         {% shift_filters %}
     </div>
     {% for week, shifts_by_day in shifts_by_weeks_and_days.items %}
-        <div class="card mb-2">
+        <div class="card m-2">
             {% with week_group=week_to_group|dictionary_get:week %}
                 <h5 class="card-header">KW {{ week|date:"W" }} {% translate 'starting' %} {{ week }},
                     {% translate 'Week ' %}{{ week_group.name }}</h5>
