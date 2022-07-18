@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   openldap:
-    image: osixia/openldap
+    image: "osixia/openldap"
     environment:
       LDAP_ORGANISATION: "WirMarkt Supermarkt Hamburg eG"
       LDAP_DOMAIN: "wirmarkt.de"
@@ -35,7 +35,7 @@ services:
       - selenium
 
   nginx-proxy:
-    image: jwilder/nginx-proxy
+    image: "jwilder/nginx-proxy"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./docker/nginx/certs:/etc/nginx/certs:ro
@@ -49,7 +49,7 @@ services:
       DEFAULT_HOST: localhost
 
   db:
-    image: postgres:14-alpine
+    image: "postgres:14-alpine"
     environment:
       - POSTGRES_DB=tapir
       - POSTGRES_PASSWORD=tapir
@@ -65,7 +65,7 @@ services:
 
   # Backend for Celery task queue
   redis:
-    image: redis:alpine
+    image: "redis:alpine"
 
   celery:
     build: .
