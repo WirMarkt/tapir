@@ -2,6 +2,7 @@
 {% load static %}
 {% load i18n %}
 {% load coop %}
+{% load core %}
 
 <!doctype html>
 {% get_current_language as LANGUAGE_CODE %}
@@ -13,7 +14,7 @@
 
     <title>{% block title %}WirMarkt - {% translate "Member Administration and Shift Plan" %}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'core/bootstrap/5.1.3/css/bootstrap.min.css' %}">
-    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
+    <link rel="shortcut icon" type="image/png" href="{% static 'core/favicon.ico' %}"/>
     <link rel="stylesheet" href="{% static 'core/css/base.css' %}">
     <link rel="stylesheet" href="{% static "core/css/custom.css" %}">
 
@@ -24,110 +25,71 @@
 </head>
 
 <body>
-<!-- Top navigation-->
-<nav class="navbar navbar-expand-md sticky-top navbar-light border-bottom mb-4" id="navbar-top">
-    <div class="container-xxl">
-        <a class="navbar-brand" href="{% url "accounts:user_me" %}">
-            <img alt="Logo" height=30" src="{% static 'core/images/Logo_dark.svg' %}">
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+
+<header class="navbar navbar-expand-md navbar-dark bg-dark sticky-top shadow px-3">
+    <div class="container-fluid">
+        <span class="navbar-brand">
+            <img alt="WirMarkt Hamburg Logo" height=30" src="{% static 'core/images/Logo_light.svg' %}">
+        </span>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse"
+                aria-controls="tapirNavbar tapirSidebar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse multi-collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto my-2 my-lg-0">
-                {% block navbar %}
-                {% if request.user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url "accounts:user_me" %}">{{ request.user.first_name }} {{ request.user.last_name }}</a>
-                </li>
-                {% endif %}
-                {% if perms.welcomedesk.view %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url "coop:welcome_desk_search" %}" id="welcome_desk_link">{% translate "Welcome Desk" %}</a>
-                </li>
-                {% endif %}
+
+        <div class="collapse multi-collapse navbar-collapse" id="tapirNavbar" style="justify-content: flex-end;">
+            <ul class="navbar-nav">
+                <div>
+                    <a class="nav-link"
+                       href="https://wiki.supercoop.de/wiki/Finanzierung">{% shop_extension_progress_bar %}</a>
+                </div>
+
                 {% if perms.coop.manage %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        {% translate "Cooperative" %}
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url "coop:shareowner_list" %}">{% translate "Members" %}</a></li>
-                        <li><a class="dropdown-item" href="{% url "coop:draftuser_list" %}">{% translate "Applicants" %}</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url "coop:statistics" %}">{% translate "Statistics" %}</a></li>
-                        <li><a class="dropdown-item" href="{% url "coop:matching_program_list" %}">{% translate "Matching program" %}</a></li>
-                    </ul>
-                </li>
+                    <li class="nav-item">
+                        <form class="form-inline" method="get" action="{% url 'coop:shareowner_list' %}">
+                        <span class="mr-5">
+                        <input id="member_search" name="display_name" type="text"
+                               placeholder="{% translate 'Search Members' %}"
+                               class="form-control">
+                        </span>
+                        </form>
+                    </li>
                 {% endif %}
-                {% if perms.shifts.manage %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        {% translate "Shifts" %}
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url "shifts:calendar_future" %}">{% translate "Shift calendar" %}</a></li>
-                        <li><a class="dropdown-item" href="{% url "shifts:create_shift" %}">{% translate "Add a shift" %}</a></li>
-                        <li><a class="dropdown-item" href="{% url "shifts:shift_template_overview" %}">{% translate "ABCD week-plan" %}</a></li>
-                        <li>
-                            <a class="dropdown-item" href="{% url "shifts:shift_template_group_calendar" %}">
-                                {% translate "ABCD calendar" %}
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url "shifts:calendar_past" %}">{% translate "Past shifts" %}</a></li>
-                        <li><a class="dropdown-item" href="{% url "shifts:shift_exemption_list" %}">{% translate "Shift exemptions" %}</a></li>
-                    </ul>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url "shifts:calendar_future" %}">{% translate "Shift calendar" %}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url "shifts:shift_template_overview" %}">{% translate "ABCD week-plan" %}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url "shifts:shift_template_group_calendar" %}">
-                        {% translate "ABCD calendar" %}
-                    </a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url "coop:tools_chat" %}">
-                        {% translate "Chat" %}
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url "coop:tools_app" %}">
-                        {% translate "App" %}
-                    </a>
-                </li>
-                {% endblock %}
-            </ul>
-            {% if perms.coop.manage %}
-            <form class="d-flex" method="get" action="{% url "coop:shareowner_list" %}">
-                <input id="member_search" name="display_name" type="text" placeholder="{% translate "Search Members" %}" class="form-control me-2"/>
-            </form>
-            {% endif %}
-            <ul class="navbar-nav my-2 my-lg-0">
+
                 {% if request.user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url "logout" %}" id="logout">Logout</a>
-                </li>
+                    <li class="nav-item">
+                        <a class="text-light nav-link"
+                           href="{% url 'accounts:user_me' %}">{{ request.user.first_name }} {{ request.user.last_name }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="text-light nav-link" href="{% url 'logout' %}" id="logout">Logout</a>
+                    </li>
                 {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url "login" %}">Login</a>
-                </li>
+                    <li class="nav-item">
+                        <a class="text-light nav-link" href="{% url 'login' %}">Login</a>
+                    </li>
                 {% endif %}
             </ul>
         </div>
     </div>
-</nav>
+</header>
 
-<div class="container-xxl">
-    <!-- Page content-->
-    {% bootstrap_messages %}
-    {% block content %}{% endblock %}
+<div class="container-fluid">
+    <div class="row">
+        <nav id="tapirSidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse multi-collapse">
+            <div class="sidebar-sticky">
+                <div class="d-md-none" style="height: 120px;"></div>
+                <!-- Pushes the links down so that they don't go under the navbar -->
+                {% block sidebar %}
+                    {% sidebar_links %}
+                {% endblock %}
+            </div>
+        </nav>
+
+        <main role="main" class="col-md-9 ms-sm-auto col-lg-10 p-2 p-md-3 p-lg-4">
+            {% bootstrap_messages %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
 </div>
 </body>
 

@@ -119,20 +119,30 @@ def get_sidebar_link_groups(request):
     misc_group = SidebarLinkGroup(name=_("Miscellaneous"))
     groups.append(misc_group)
     misc_group.add_link(
-        display_name=_("Wiki"),
-        material_icon="feed",
+        display_name=_("Website"),
+        material_icon="public",
         url="https://wirmarkt.de",
     )
     misc_group.add_link(
-        display_name=_("Member manual"),
-        material_icon="menu_book",
-        url="https://wirmarkt.de",
+        display_name=_("Chat"),
+        material_icon="chat",
+        url=reverse_lazy("coop:tools_chat"),
     )
     misc_group.add_link(
-        display_name=_("Shop opening hours"),
-        material_icon="access_time",
-        url="https://wirmarkt.de",
+        display_name=_("App"),
+        material_icon="smartphone",
+        url=reverse_lazy("coop:tools_app"),
     )
+    # misc_group.add_link(
+    #     display_name=_("Member manual"),
+    #     material_icon="menu_book",
+    #     url="https://wirmarkt.de",
+    # )
+    # misc_group.add_link(
+    #     display_name=_("Shop opening hours"),
+    #     material_icon="access_time",
+    #     url="https://wirmarkt.de",
+    # )
     misc_group.add_link(
         display_name=_("Contact the member office"),
         material_icon="email",
