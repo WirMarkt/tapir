@@ -127,7 +127,7 @@ msgid ""
 "        "
 msgstr ""
 "\n"
-"Fliegende Mitglieder: Bitte achtet darauf, zu jedem Zyklus-Ende mindestens "
+"Fliegende Mitglieder: Bitte achtet darauf, zu jedem Schicht-Zyklus-Ende mindestens "
 "ein Schichtguthaben auf eurem Schichtkonto zu haben.\n"
 " "
 
@@ -420,7 +420,7 @@ msgstr ""
 
 #: coop/forms.py:54 shifts/templates/shifts/shiftexemption_list.html:21
 msgid "End date"
-msgstr "Endsdatum"
+msgstr "Enddatum"
 
 #: coop/forms.py:58
 msgid ""
