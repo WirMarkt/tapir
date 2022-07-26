@@ -98,9 +98,9 @@ class ShareOwnershipCreateMultipleView(PermissionRequiredMixin, FormView):
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
-        context_data["card_title"] = _(
-            f"Add shares to {self.get_share_owner().get_info().get_display_name()}"
-        )
+        context_data["card_title"] = _(f"Add shares to %(name)s") % {
+            "name": self.get_share_owner().get_info().get_display_name()
+        }
         return context_data
 
     def form_valid(self, form):
