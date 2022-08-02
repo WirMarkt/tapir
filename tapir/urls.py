@@ -14,10 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views import generic
 
 from tapir.settings import ENABLE_SILK_PROFILING, ENABLE_API
@@ -29,10 +28,11 @@ urlpatterns = [
     path("shifts/", include("tapir.shifts.urls")),
     path("coop/", include("tapir.coop.urls")),
     path("log/", include("tapir.log.urls")),
+    path("oidc/", include("mozilla_django_oidc.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if ENABLE_SILK_PROFILING:
-    urlpatterns += [url(r"^silk/", include("silk.urls", namespace="silk"))]
+    urlpatterns += [re_path(r"^silk/", include("silk.urls", namespace="silk"))]
 
 if ENABLE_API:
-    urlpatterns += [url(r"^api/v1/", include("tapir.api.urls"))]
+    urlpatterns += [re_path(r"^api/v1/", include("tapir.api.urls"))]

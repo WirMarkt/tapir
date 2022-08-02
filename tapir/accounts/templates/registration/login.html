@@ -16,6 +16,7 @@
                 {% translate "Sign in" %}
             </h5>
             <div class="card-body">
+                <a href="{% url 'oidc_authentication_init' %}">Login</a>
                 <form role="form" method="post">
                     {% csrf_token %}
                     <div class="mb-3">
@@ -41,9 +42,9 @@
                         <span class="material-icons">login</span>
                         {% translate "Sign in" %}
                     </button>
-                    <div class="my-2">
-                        <a href="{% url "password_reset" %}">{% translate "Forgot your password?" %}</a>
-                    </div>
+{#                    <div class="my-2">#}
+{#                        <a href="{% url "password_reset" %}">{% translate "Forgot your password?" %}</a>#}
+{#                    </div>#}
                     <div class="my-2">
                         <a href="{% url "coop:draftuser_register" %}">{% translate "Apply for membership" %}</a>
                     </div>

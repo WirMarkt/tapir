@@ -1,18 +1,16 @@
 version: "3.9"
 services:
-  openldap:
-    image: "osixia/openldap"
+  keycloak:
+    image: "quay.io/keycloak/keycloak:19.0.1"
     environment:
-      LDAP_ORGANISATION: "WirMarkt Supermarkt Hamburg eG"
-      LDAP_DOMAIN: "wirmarkt.de"
-      LDAP_ADMIN_PASSWORD: "admin"
-      LDAP_READONLY_USER: "true"
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
     ports:
-      - "389:389"
-    volumes:
-      - ./ldap_testdata.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/50-testdata.ldif
+      - "8080:8080"
+    #volumes:
+    #  - ./ldap_testdata.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/50-testdata.ldif
     # Required so that the container doesn't modify the testdata ldif
-    command: --copy-service
+    command: start-dev
 
   web:
     build: .
@@ -30,7 +28,7 @@ services:
       LDAP_WELCOME_DESK_ID: "CN=welcome-desk.members.wirmarkt.de,O=WirMarkt,C=DE"
 
     depends_on:
-      - openldap
+      - keycloak
       - db
       - selenium
 
@@ -75,10 +73,6 @@ services:
       - .:/app
     environment:
       DEBUG: 1
-      LDAP_URL: "ldap://cn=admin,dc=wirmarkt,dc=de:admin@openldap"
-      REG_PERSON_BASE_DN: "ou=people,dc=wirmarkt,dc=de"
-      REG_GROUP_BASE_DN: "ou=groups,dc=wirmarkt,dc=de"
-      LDAP_WELCOME_DESK_ID: "CN=welcome-desk.members.wirmarkt.de,O=WirMarkt,C=DE"
     depends_on:
       - redis
 
@@ -91,10 +85,6 @@ services:
       - .:/app
     environment:
       DEBUG: 1
-      LDAP_URL: "ldap://cn=admin,dc=wirmarkt,dc=de:admin@openldap"
-      REG_PERSON_BASE_DN: "ou=people,dc=wirmarkt,dc=de"
-      REG_GROUP_BASE_DN: "ou=groups,dc=wirmarkt,dc=de"
-      LDAP_WELCOME_DESK_ID: "CN=welcome-desk.members.wirmarkt.de,O=WirMarkt,C=DE"
     depends_on:
       - redis
 

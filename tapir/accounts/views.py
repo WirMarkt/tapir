@@ -10,7 +10,7 @@ from django.views import generic
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
-from tapir.accounts.forms import TapirUserForm, PasswordResetForm
+from tapir.accounts.forms import TapirUserForm
 from tapir.accounts.models import TapirUser, UpdateTapirUserLogEntry
 from tapir.log.models import EmailLogEntry
 from tapir.log.util import freeze_for_log
@@ -53,11 +53,6 @@ class UserUpdateView(PermissionRequiredMixin, UpdateViewLogMixin, generic.Update
                 log_entry.save()
 
             return response
-
-
-class PasswordResetView(auth_views.PasswordResetView):
-    # Form class to allow password reset despite unusable password in the db
-    form_class = PasswordResetForm
 
 
 @require_POST

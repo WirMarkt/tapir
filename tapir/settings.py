@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     # TODO(Leon Handreke): Don't install in prod
     "django_extensions",
     "chartjs",
+    "mozilla_django_oidc",
 ]
 
 if ENABLE_SILK_PROFILING:
@@ -87,6 +88,7 @@ MIDDLEWARE = [
     "tapir.accounts.models.language_middleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "mozilla_django_oidc.middleware.SessionRefresh",
 ]
 
 if ENABLE_SILK_PROFILING:
@@ -283,3 +285,17 @@ if ENABLE_API:
         "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
         "REFRESH_TOKEN_LIFETIME": timedelta(weeks=12),
     }
+
+AUTHENTICATION_BACKENDS = ("mozilla_django_oidc.auth.OIDCAuthenticationBackend",)
+
+OIDC_RP_CLIENT_ID = env("OIDC_RP_CLIENT_ID", default="tapir")
+OIDC_RP_CLIENT_SECRET = env(
+    "OIDC_RP_CLIENT_SECRET", default="YWirl4tTRx4klUrUQRbQ2j4ZHY2q3I8Y"
+)
+
+OIDC_OP_AUTHORIZATION_ENDPOINT = "http://localhost:8080/auth/"
+OIDC_OP_TOKEN_ENDPOINT = "http://localhost:8080/auth/token/"
+OIDC_OP_USER_ENDPOINT = "http://localhost:8080/auth/user/"
+
+LOGIN_REDIRECT_URL = "http://localhost:8000/"
+LOGOUT_REDIRECT_URL = "http://localhost:8000/"
