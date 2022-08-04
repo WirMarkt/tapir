@@ -70,7 +70,10 @@ def create_text_log_entry(request, **kwargs):
 
 class LogTable(django_tables2.Table):
     entry = django_tables2.Column(
-        empty_values=(), accessor="as_leaf_class__render", verbose_name=_("Message")
+        empty_values=(),
+        accessor="as_leaf_class__render",
+        verbose_name=_("Message"),
+        orderable=False,
     )
     member = django_tables2.Column(
         empty_values=(), accessor="user", verbose_name=_("Member")
@@ -81,6 +84,7 @@ class LogTable(django_tables2.Table):
         model = LogEntry
         template_name = "django_tables2/bootstrap.html"
         fields = ["created_date", "actor", "member", "entry"]
+        order_by = "-created_date"
 
     def render_created_date(self, value: datetime.datetime):
         return value.strftime("%d.%m.%Y %H:%M")
@@ -110,13 +114,18 @@ class LogFilter(django_filters.FilterSet):
         if self.request.user.has_perm("coop.view"):
             # In case the user who requests the Logs actually has permission, make a list of all ShareOwners
             share_owner_list = ShareOwner.objects.order_by("id")
+            user_list = TapirUser.objects.all()
         else:
             share_owner_list = ShareOwner.objects.filter(
                 id=self.request.user.share_owner.id
             )
+            user_list = TapirUser.objects.filter(pk=self.request.user.pk)
+
         self.filters["members"].field.queryset = share_owner_list
         self.filters["actor"].field.queryset = TapirUser.objects.filter(
-            id__in=LogEntry.objects.all().values_list("actor", flat=True).distinct()
+            id__in=LogEntry.objects.filter(user_id__in=user_list)
+            .values_list("actor", flat=True)
+            .distinct()
         )
 
     time = DateRangeFilter(field_name="created_date")

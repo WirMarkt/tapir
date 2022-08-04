@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-26 10:07+0200\n"
-"PO-Revision-Date: 2022-03-05 19:07+0100\n"
+"POT-Creation-Date: 2022-08-04 18:24+0200\n"
+"PO-Revision-Date: 2022-08-02 19:07+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de\n"
@@ -127,8 +127,8 @@ msgid ""
 "        "
 msgstr ""
 "\n"
-"Fliegende Mitglieder: Bitte achtet darauf, zu jedem Schicht-Zyklus-Ende mindestens "
-"ein Schichtguthaben auf eurem Schichtkonto zu haben.\n"
+"Fliegende Mitglieder: Bitte achtet darauf, zu jedem Schicht-Zyklus-Ende "
+"mindestens ein Schichtguthaben auf eurem Schichtkonto zu haben.\n"
 " "
 
 #: accounts/templates/accounts/email/welcome_email.default.html:35
@@ -181,8 +181,8 @@ msgstr "Dein Konto in der Mitgliederverwaltung"
 msgid "Your account in the WirMarkt member system"
 msgstr "Dein Konto in der WirMarkt Mitgliederverwaltung"
 
-#: accounts/templates/accounts/user_detail.html:17
-#: shifts/templates/shifts/shift_day_printable.html:55
+#: accounts/templates/accounts/user_detail.html:17 log/views.py:79
+#: log/views.py:133 shifts/templates/shifts/shift_day_printable.html:55
 #: shifts/templates/shifts/shift_detail_printable.html:48
 msgid "Member"
 msgstr "Mitglied"
@@ -717,7 +717,7 @@ msgid "Shares State"
 msgstr "Status Anteile"
 
 #: coop/templates/coop/draftuser_list.html:32
-#: log/templates/log/log_entry_list_tag.html:15
+#: log/templates/log/log_entry_list_tag.html:20
 #: shifts/templates/shifts/user_shift_account_log.html:26
 msgid "Date"
 msgstr "Datum"
@@ -1402,6 +1402,12 @@ msgstr ""
 "%(name)s hat kein Tapir-Konto. Kontaktiere eine Person aus dem Vorstand."
 
 #: coop/templates/coop/welcome_desk_share_owner.html:36
+#, fuzzy, python-format
+#| msgid ""
+#| "\n"
+#| "                            %(name)s has a negative shift balance "
+#| "(%(balance)s). Contact a member of the management\n"
+#| "                            team."
 msgid ""
 "\n"
 "                            %(name)s has a negative shift balance "
@@ -1611,28 +1617,37 @@ msgid "Email sent"
 msgstr "E-Mail gesendet"
 
 #: log/templates/log/log_entry_list_tag.html:8
-msgid "Log"
-msgstr "Protokoll"
+msgid "Last 20 log entries"
+msgstr "Letzte 20 Log-Einträge"
 
-#: log/templates/log/log_entry_list_tag.html:12
+#: log/templates/log/log_entry_list_tag.html:11
+msgid "See all log entries"
+msgstr "Alle Log-Einträge einsehen"
+
+#: log/templates/log/log_entry_list_tag.html:17
 msgid "List of log entries for this member"
 msgstr "Liste der Protokoll-Einträge für dieses Mitglied"
 
-#: log/templates/log/log_entry_list_tag.html:16
+#: log/templates/log/log_entry_list_tag.html:21 log/views.py:81
+#: log/views.py:132
 msgid "Actor"
 msgstr "Sender:in"
 
-#: log/templates/log/log_entry_list_tag.html:17
+#: log/templates/log/log_entry_list_tag.html:22 log/views.py:75
 msgid "Message"
 msgstr "Nachricht"
 
-#: log/templates/log/log_entry_list_tag.html:41
+#: log/templates/log/log_entry_list_tag.html:46
 msgid "Notes about this user"
 msgstr "Notizen über diese:n Benutzer:in"
 
-#: log/templates/log/log_entry_list_tag.html:44
+#: log/templates/log/log_entry_list_tag.html:49
 msgid "Add Note"
 msgstr "Notiz hinzufügen"
+
+#: log/templates/log/log_overview.html:19
+msgid "Logs"
+msgstr ""
 
 #: shifts/forms.py:47
 msgid "The shift must end after it starts."
@@ -2566,7 +2581,7 @@ msgstr "Keine"
 msgid "View all"
 msgstr "Alle ansehen"
 
-#: shifts/templatetags/shifts.py:57 shifts/templatetags/shifts.py:132
+#: shifts/templatetags/shifts.py:62 shifts/templatetags/shifts.py:143
 #: shifts/views/views.py:80
 msgid "General"
 msgstr "Allgemein"
@@ -3564,6 +3579,9 @@ msgstr "Anfangsdatum muss vor Enddatum sein"
 #: utils/models.py:390
 msgid "Must be a positive number."
 msgstr "Muss eine positive Zahl sein."
+
+#~ msgid "Log"
+#~ msgstr "Protokoll"
 
 #~ msgid "Statistics"
 #~ msgstr "Statistik"
