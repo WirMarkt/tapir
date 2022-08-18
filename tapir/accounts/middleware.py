@@ -3,7 +3,9 @@ import datetime
 from django.conf import settings
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
+from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
+from tapir.accounts.models import TapirUser
 from tapir.shifts.models import Shift, ShiftAttendance
 
 
@@ -36,3 +38,21 @@ class ClientPermsMiddleware(MiddlewareMixin):
         )
         if user_is_currently_doing_a_shift:
             request.user.client_perms = ["welcomedesk.view"]
+
+
+class TapirOIDCAB(OIDCAuthenticationBackend):
+    # def create_user(self, claims):
+    #     user: TapirUser = super(TapirOIDCAB, self).create_user(claims)
+    #
+    #     user.first_name = claims.get('given_name', '')
+    #     user.last_name = claims.get('family_name', '')
+    #     user.save()
+    #
+    #     return user
+
+    def update_user(self, user: TapirUser, claims):
+        # user.first_name = claims.get('given_name', '')
+        # user.last_name = claims.get('family_name', '')
+        # user.save()
+
+        return user

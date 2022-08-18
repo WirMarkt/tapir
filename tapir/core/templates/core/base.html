@@ -61,11 +61,14 @@
                            href="{% url 'accounts:user_me' %}">{{ request.user.first_name }} {{ request.user.last_name }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="text-light nav-link" href="{% url 'logout' %}" id="logout">Logout</a>
+                        <form action="{% url 'oidc_logout' %}" method="post">
+                            {% csrf_token %}
+                            <input type="submit" value="logout">
+                        </form>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="text-light nav-link" href="{% url 'login' %}">Login</a>
+                        <a href="{% url 'oidc_authentication_init' %}">Login</a>
                     </li>
                 {% endif %}
             </ul>

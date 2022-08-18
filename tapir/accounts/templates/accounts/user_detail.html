@@ -97,7 +97,7 @@
                         </div>
                         {% if object.pk == request.user.pk %}
                         <div class="m-1">
-                            <a class="btn btn-sm btn-outline-info" href="{% url 'password_change' %}">{% translate "Change Password" %}</a>
+{#                            <a class="btn btn-sm btn-outline-info" href="{% url 'password_change' %}">{% translate "Change Password" %}</a>#}
                         </div>
                         {% endif %}
                         {% if perms.accounts.manage %}

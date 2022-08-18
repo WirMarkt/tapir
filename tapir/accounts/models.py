@@ -1,8 +1,5 @@
 import logging
 
-import pyasn1.codec.ber.encoder
-import pyasn1.type.namedtype
-import pyasn1.type.univ
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager, User
 from django.contrib.auth.tokens import default_token_generator

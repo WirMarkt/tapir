@@ -126,17 +126,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "tapir.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 DATABASES = {
     "default": env.db(default="postgresql://tapir:tapir@db:5432/tapir"),
-    "ldap": env.db_url(
-        "LDAP_URL", default="ldap://cn=admin,dc=wirmarkt,dc=de:admin@openldap"
-    ),
 }
 
-DATABASE_ROUTERS = ["ldapdb.router.Router"]
+# DATABASE_ROUTERS = ["ldapdb.router.Router"]
 
 CELERY_BROKER_URL = "redis://redis:6379"
 CELERY_RESULT_BACKEND = "redis://redis:6379"
@@ -174,7 +170,6 @@ PASSWORD_RESET_TIMEOUT = (
     7776000  # 90 days, so that the welcome emails stay valid for long enough
 )
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -183,7 +178,6 @@ TIME_ZONE = "Europe/Berlin"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
 
 # django-environ EMAIL_URL mechanism is a bit hairy with passwords with slashes in them, so use this instead
 EMAIL_ENV = env("EMAIL_ENV", default="dev")
@@ -205,7 +199,6 @@ EMAIL_ADDRESS_ACCOUNTING = "office@wirmarkt.de"
 COOP_NAME = "WirMarkt Hamburg"
 FROM_EMAIL_MEMBER_OFFICE = f"{COOP_NAME} Mitgliederbüro <{EMAIL_ADDRESS_MEMBER_OFFICE}>"
 DEFAULT_FROM_EMAIL = FROM_EMAIL_MEMBER_OFFICE
-
 
 # DJANGO_ADMINS="Blake <blake@cyb.org>, Alice Judge <alice@cyb.org>"
 ADMINS = tuple(email.utils.parseaddr(x) for x in env.list("DJANGO_ADMINS", default=[]))
@@ -286,16 +279,31 @@ if ENABLE_API:
         "REFRESH_TOKEN_LIFETIME": timedelta(weeks=12),
     }
 
-AUTHENTICATION_BACKENDS = ("mozilla_django_oidc.auth.OIDCAuthenticationBackend",)
+AUTHENTICATION_BACKENDS = ("tapir.accounts.middleware.TapirOIDCAB",)
 
 OIDC_RP_CLIENT_ID = env("OIDC_RP_CLIENT_ID", default="tapir")
 OIDC_RP_CLIENT_SECRET = env(
-    "OIDC_RP_CLIENT_SECRET", default="YWirl4tTRx4klUrUQRbQ2j4ZHY2q3I8Y"
+    "OIDC_RP_CLIENT_SECRET", default="UUebOazoZOqvgowXECVvgbJiXatTakdG"
+)
+OIDC_RP_SCOPES = "openid email profile"
+
+OIDC_OP_AUTHORIZATION_ENDPOINT = (
+    "http://keycloak.local/realms/master/protocol/openid-connect/auth"
+)
+OIDC_OP_TOKEN_ENDPOINT = (
+    "http://keycloak.local/realms/master/protocol/openid-connect/token"
+)
+OIDC_OP_USER_ENDPOINT = (
+    "http://keycloak.local/realms/master/protocol/openid-connect/userinfo"
 )
 
-OIDC_OP_AUTHORIZATION_ENDPOINT = "http://localhost:8080/auth/"
-OIDC_OP_TOKEN_ENDPOINT = "http://localhost:8080/auth/token/"
-OIDC_OP_USER_ENDPOINT = "http://localhost:8080/auth/user/"
+OIDC_RP_SIGN_ALGO = "RS256"
+# OIDC_OP_JWKS_ENDPOINT = 'http://keycloak:8080/realms/master/protocol/openid-connect/certs'
+OIDC_OP_JWKS_ENDPOINT = (
+    "http://keycloak.local/realms/master/protocol/openid-connect/certs"
+)
 
-LOGIN_REDIRECT_URL = "http://localhost:8000/"
-LOGOUT_REDIRECT_URL = "http://localhost:8000/"
+LOGIN_REDIRECT_URL = "http://tapir.local/"
+LOGOUT_REDIRECT_URL = "http://tapir.local/"
+
+OIDC_CREATE_USER = False
