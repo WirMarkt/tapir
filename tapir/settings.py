@@ -283,25 +283,31 @@ AUTHENTICATION_BACKENDS = ("tapir.accounts.middleware.TapirOIDCAB",)
 
 OIDC_RP_CLIENT_ID = env("OIDC_RP_CLIENT_ID", default="tapir")
 OIDC_RP_CLIENT_SECRET = env(
-    "OIDC_RP_CLIENT_SECRET", default="UUebOazoZOqvgowXECVvgbJiXatTakdG"
+    "OIDC_RP_CLIENT_SECRET", default="ygFXfQ8x6yUkgPTccQyqIC0OIHe9oWmI"
 )
 OIDC_RP_SCOPES = "openid email profile"
 
 OIDC_OP_AUTHORIZATION_ENDPOINT = (
-    "http://keycloak.local/realms/master/protocol/openid-connect/auth"
+    "http://keycloak.local/realms/tapir/protocol/openid-connect/auth"
 )
 OIDC_OP_TOKEN_ENDPOINT = (
-    "http://keycloak.local/realms/master/protocol/openid-connect/token"
+    "http://keycloak.local/realms/tapir/protocol/openid-connect/token"
 )
 OIDC_OP_USER_ENDPOINT = (
-    "http://keycloak.local/realms/master/protocol/openid-connect/userinfo"
+    "http://keycloak.local/realms/tapir/protocol/openid-connect/userinfo"
 )
 
 OIDC_RP_SIGN_ALGO = "RS256"
-# OIDC_OP_JWKS_ENDPOINT = 'http://keycloak:8080/realms/master/protocol/openid-connect/certs'
+# OIDC_OP_JWKS_ENDPOINT = 'http://keycloak:8080/realms/tapir/protocol/openid-connect/certs'
 OIDC_OP_JWKS_ENDPOINT = (
-    "http://keycloak.local/realms/master/protocol/openid-connect/certs"
+    "http://keycloak.local/realms/tapir/protocol/openid-connect/certs"
 )
+
+OIDC_STORE_ID_TOKEN = True
+OIDC_PROVIDER_LOGOUT_URL = (
+    "http://keycloak.local/realms/tapir/protocol/openid-connect/logout"
+)
+OIDC_OP_LOGOUT_URL_METHOD = "tapir.accounts.middleware.provider_logout"
 
 LOGIN_REDIRECT_URL = "http://tapir.local/"
 LOGOUT_REDIRECT_URL = "http://tapir.local/"

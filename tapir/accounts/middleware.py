@@ -1,11 +1,15 @@
 import datetime
+from urllib.parse import urlencode
+from urllib.request import Request
 
 from django.conf import settings
+from django.middleware.csrf import get_token
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from tapir.accounts.models import TapirUser
+from tapir.settings import LOGOUT_REDIRECT_URL, OIDC_PROVIDER_LOGOUT_URL
 from tapir.shifts.models import Shift, ShiftAttendance
 
 
@@ -56,3 +60,19 @@ class TapirOIDCAB(OIDCAuthenticationBackend):
         # user.save()
 
         return user
+
+
+def provider_logout(request):
+    # See your provider's documentation for details on if and how this is
+    # supported
+
+    id_token = request.session.get("oidc_id_token")
+
+    redirect_url = (
+        OIDC_PROVIDER_LOGOUT_URL
+        + "?"
+        + urlencode(
+            {"post_logout_redirect_uri": LOGOUT_REDIRECT_URL, "id_token_hint": id_token}
+        )
+    )
+    return redirect_url

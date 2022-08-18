@@ -5,12 +5,13 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_IMPORT: /var/keycloak/tapir-realm.json
       VIRTUAL_HOST: keycloak.local
       VIRTUAL_PORT: 8080
-    #volumes:
-    #  - ./ldap_testdata.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/50-testdata.ldif
+    volumes:
+      - ./docker/keycloak:/opt/keycloak/data/import:ro
     # Required so that the container doesn't modify the testdata ldif
-    command: start-dev
+    command: start-dev --import-realm
 
     # To set up bootstrap: https://stackoverflow.com/a/56137226
 
