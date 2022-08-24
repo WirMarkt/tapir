@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import email.utils
 import os
 from datetime import timedelta
-from decimal import Decimal
 from pathlib import Path
 
 import celery.schedules
@@ -279,6 +278,10 @@ if ENABLE_API:
         "REFRESH_TOKEN_LIFETIME": timedelta(weeks=12),
     }
 
+####################
+# Keycloak-related #
+####################
+
 AUTHENTICATION_BACKENDS = ("tapir.accounts.middleware.TapirOIDCAB",)
 
 OIDC_RP_CLIENT_ID = env("OIDC_RP_CLIENT_ID", default="tapir")
@@ -287,26 +290,20 @@ OIDC_RP_CLIENT_SECRET = env(
 )
 OIDC_RP_SCOPES = "openid email profile"
 
-OIDC_OP_AUTHORIZATION_ENDPOINT = (
-    "http://keycloak.local/realms/tapir/protocol/openid-connect/auth"
-)
-OIDC_OP_TOKEN_ENDPOINT = (
-    "http://keycloak.local/realms/tapir/protocol/openid-connect/token"
-)
-OIDC_OP_USER_ENDPOINT = (
-    "http://keycloak.local/realms/tapir/protocol/openid-connect/userinfo"
-)
+KEYCLOAK_PATH = env("KEYCLOAK_PATH", default="http://keycloak.local/realms/tapir")
+
+OIDC_OP_AUTHORIZATION_ENDPOINT = KEYCLOAK_PATH + "/protocol/openid-connect/auth"
+OIDC_OP_TOKEN_ENDPOINT = KEYCLOAK_PATH + "/protocol/openid-connect/token"
+OIDC_OP_USER_ENDPOINT = KEYCLOAK_PATH + "/protocol/openid-connect/userinfo"
 
 OIDC_RP_SIGN_ALGO = "RS256"
-# OIDC_OP_JWKS_ENDPOINT = 'http://keycloak:8080/realms/tapir/protocol/openid-connect/certs'
-OIDC_OP_JWKS_ENDPOINT = (
-    "http://keycloak.local/realms/tapir/protocol/openid-connect/certs"
-)
 
+OIDC_OP_JWKS_ENDPOINT = KEYCLOAK_PATH + "/protocol/openid-connect/certs"
+
+# store OIDC token in session, used for logging out from Keycloak as well when logging out from tapir
 OIDC_STORE_ID_TOKEN = True
-OIDC_PROVIDER_LOGOUT_URL = (
-    "http://keycloak.local/realms/tapir/protocol/openid-connect/logout"
-)
+
+OIDC_PROVIDER_LOGOUT_URL = KEYCLOAK_PATH + "/protocol/openid-connect/logout"
 OIDC_OP_LOGOUT_URL_METHOD = "tapir.accounts.middleware.provider_logout"
 
 LOGIN_REDIRECT_URL = "http://tapir.local/"

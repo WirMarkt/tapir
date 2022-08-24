@@ -7,7 +7,7 @@ Just choose a task that you like.
 2. [:computer: Contribute Code](CONTRIBUTING.md#contribute-code)
 3. [:earth_africa: Translate Tapir](CONTRIBUTING.md#translate-tapir)
 4. [:book: Improve Documentation](CONTRIBUTING.md#documentation)
-5. [:apple: Become a part of SuperCoop e.G.](https://supercoop.de/en/joinus/)
+5. [:apple: Become a part of WirMarkt Supermarkt Hamburg e.G.](https://wirmarkt.de/)
 
 
 #### I just have a question?!
@@ -121,6 +121,10 @@ docker-compose exec web poetry run python manage.py shell_plus
 ### LDAP
 
 For reading or modifying the LDAP, Apache Directory Studio is pretty handy.
+
+### Keycloak
+
+For reading or modifying Keycloak, use the included web frontend.
 
 ### Running tests
 

@@ -20,7 +20,7 @@ Clone the project, install docker and run
 docker-compose up
 ```
 
-This starts a container with an LDAP server and automatically loads the test data into the LDAP.
+This starts a container with a Keycloak server and automatically loads the test data into Keycloak.
 
 For local development and testing, set up the test database and load test data
 
