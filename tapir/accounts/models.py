@@ -12,6 +12,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
+from django.contrib.postgres.fields import ArrayField
 
 from tapir import utils
 from tapir.accounts import validators
@@ -82,6 +83,15 @@ class TapirUser(AbstractUser):
         max_length=16,
     )
 
+    # custom field to store permissions from OpenID Connect
+    # the "client_perms" approach doesn't seem to work
+    oidc_perms = ArrayField(
+        models.CharField(max_length=128),
+        default=list,
+        blank=True,
+        null=False,
+    )
+
     objects = TapirUserManager()
 
     def get_display_name(self):
@@ -116,6 +126,8 @@ class TapirUser(AbstractUser):
         return email
 
     def has_perm(self, perm, obj=None):
+        print("user obj id MOD")
+        print(id(self))
         # This is a hack to allow permissions based on client certificates. ClientPermsMiddleware checks the
         # certificate in the request and adds the extra permissions the user object, which is accessible here.
         if hasattr(self, "client_perms") and perm in self.client_perms:

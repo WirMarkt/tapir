@@ -222,20 +222,16 @@ REG_PERSON_OBJECT_CLASSES = ["inetOrgPerson", "organizationalPerson", "person"]
 REG_GROUP_BASE_DN = "ou=groups,dc=wirmarkt,dc=de"
 REG_GROUP_OBJECT_CLASSES = ["groupOfNames"]
 
-# Groups are stored in the LDAP tree
-GROUP_VORSTAND = "vorstand"
-GROUP_MEMBER_OFFICE = "member-office"
-# This is our own little stupid permission system. See explanation in accounts/models.py.
-PERMISSIONS = {
-    "shifts.manage": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    "coop.view": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    "coop.manage": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    # TODO(Leon Handreke): Reserve this to a list of knowledgeable superusers
-    "coop.admin": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    "accounts.view": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    "accounts.manage": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    "welcomedesk.view": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-}
+# List of supported permissions
+PERMISSIONS = [
+    "shifts.manage",
+    "coop.view",
+    "coop.manage",
+    "coop.admin",
+    "accounts.view",
+    "accounts.manage",
+    "welcomedesk.view",
+]
 
 # Permissions granted to client presenting a given SSL client cert. Currently used for the welcome desk machines.
 LDAP_WELCOME_DESK_ID = (
@@ -288,6 +284,7 @@ OIDC_RP_CLIENT_ID = env("OIDC_RP_CLIENT_ID", default="tapir")
 OIDC_RP_CLIENT_SECRET = env(
     "OIDC_RP_CLIENT_SECRET", default="ygFXfQ8x6yUkgPTccQyqIC0OIHe9oWmI"
 )
+# TODO define scopes here to be verified
 OIDC_RP_SCOPES = "openid email profile"
 
 KEYCLOAK_PATH = env("KEYCLOAK_PATH", default="http://keycloak.local/realms/tapir")

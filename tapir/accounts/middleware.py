@@ -45,19 +45,28 @@ class ClientPermsMiddleware(MiddlewareMixin):
 
 
 class TapirOIDCAB(OIDCAuthenticationBackend):
-    # def create_user(self, claims):
-    #     user: TapirUser = super(TapirOIDCAB, self).create_user(claims)
-    #
-    #     user.first_name = claims.get('given_name', '')
-    #     user.last_name = claims.get('family_name', '')
-    #     user.save()
-    #
-    #     return user
+    def verify_claims(self, claims):
+        verified = super(TapirOIDCAB, self).verify_claims(claims)
+        has_groups = "roles" in claims
+        email_verified = claims.get("email_verified", False)
+        # optionally restrict usage to certain users
+        return verified and has_groups and email_verified
+
+    def get_user_permissions(self, user_obj: TapirUser, obj=None):
+        super_perms = super().get_user_permissions(user_obj, obj)
+        return super_perms.union(set(user_obj.oidc_perms))
+
+    def create_user(self, claims):
+        user: TapirUser = super(TapirOIDCAB, self).create_user(claims)
+
+        user.oidc_perms = claims["roles"]
+        user.save()
+
+        return user
 
     def update_user(self, user: TapirUser, claims):
-        # user.first_name = claims.get('given_name', '')
-        # user.last_name = claims.get('family_name', '')
-        # user.save()
+        user.oidc_perms = claims["roles"]
+        user.save()
 
         return user
 
