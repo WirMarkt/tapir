@@ -10,10 +10,7 @@ services:
       VIRTUAL_PORT: 8080
     volumes:
       - ./docker/keycloak:/opt/keycloak/data/import:ro
-    # Required so that the container doesn't modify the testdata ldif
     command: start-dev --import-realm
-
-    # To set up bootstrap: https://stackoverflow.com/a/56137226
 
   web:
     build: .

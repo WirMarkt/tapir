@@ -16,39 +16,7 @@
                 {% translate "Sign in" %}
             </h5>
             <div class="card-body">
-                <a href="{% url 'oidc_authentication_init' %}">Login</a>
-                <form role="form" method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label" for="id_username">Nutzer*innenname</label>
-                        <input type="text" name="username" autofocus="" autocapitalize="none" autocomplete="username"
-                               maxlength="150" class="form-control" placeholder="Nutzer*innenname" required=""
-                               id="id_username" autocomplete="off">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="id_password">Passwort</label>
-                        <div class="input-group" id="custom_password_group">
-                            <input type="password" name="password" autocomplete="current-password" class="form-control"
-                                   placeholder="Passwort" required="" id="id_password">
-                            <div class="input-group-append" style="cursor: pointer;">
-                                <span title="{% translate 'Click here to show/hide the password' %}"
-                                      class="btn tapir-btn btn-outline-secondary" id="password_toggle" style="height: 100%;">
-                                    <span id="password_toggle_icon" class="material-icons">visibility</span>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn tapir-btn btn-primary btn-block">
-                        <span class="material-icons">login</span>
-                        {% translate "Sign in" %}
-                    </button>
-{#                    <div class="my-2">#}
-{#                        <a href="{% url "password_reset" %}">{% translate "Forgot your password?" %}</a>#}
-{#                    </div>#}
-                    <div class="my-2">
-                        <a href="{% url "coop:draftuser_register" %}">{% translate "Apply for membership" %}</a>
-                    </div>
-                </form>
+                <a href="{% url 'oidc_authentication_init' %}">{% translate "Login with OpenID Connect" %}</a>
             </div>
         </div>
     </div>

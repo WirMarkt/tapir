@@ -51,6 +51,11 @@ You can do so **without any programming or Python knowledge**! Just choose a tas
 
 * On macOS, in order to set up a local Python `venv`, you might have to install Postgresql to get `psycopg2` working. Use `brew install postgresql` for that. 
 
+* To recreate Keycloak bootstrap data:
+  * In a terminal run: `docker exec -it tapir-keycloak-1 bash`
+  * In docker bash run: `/opt/keycloak/bin/kc.sh export --file /tmp/tapir.json --realm tapir`
+  * In terminal, change to this project's `docker/keycloak` folder and run: `docker cp tapir-keycloak-1:/tmp/tapir.json .`
+
 # Troubleshooting
 
 * On macOS, you might have to install Postgresql to get `psycopg2` working. Use `brew install postgresql` for that.
