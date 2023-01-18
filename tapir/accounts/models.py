@@ -42,7 +42,9 @@ class LdapUser(AbstractUser):
 
     def create_ldap(self):
         username = self.username
-        LdapPerson.objects.create(uid=username, sn=username, cn=username)
+        LdapPerson.objects.create(
+            uid=username, givenName=username, sn=username, cn=username
+        )
 
     def set_ldap_password(self, raw_password):
         ldap_person = self.get_ldap()
@@ -57,6 +59,7 @@ class LdapUser(AbstractUser):
         else:
             ldap_user = LdapPerson(uid=self.username)
 
+        ldap_user.givenName = self.first_name or self.username
         ldap_user.sn = self.last_name or self.username
         ldap_user.cn = self.get_full_name() or self.username
         ldap_user.mail = self.email
@@ -232,8 +235,9 @@ class LdapPerson(ldapdb.models.Model):
 
     # Minimal attributes
     uid = ldapdb_fields.CharField(db_column="uid", max_length=200, primary_key=True)
-    cn = ldapdb_fields.CharField(db_column="cn", max_length=200)
+    givenName = ldapdb_fields.CharField(db_column="givenName", max_length=200)
     sn = ldapdb_fields.CharField(db_column="sn", max_length=200)
+    cn = ldapdb_fields.CharField(db_column="cn", max_length=200)
     mail = ldapdb_fields.CharField(db_column="mail", max_length=200)
 
     def __str__(self):
