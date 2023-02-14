@@ -5,6 +5,7 @@ from tapir.accounts.models import TapirUser
 from tapir.accounts.tests.factories.factories import TapirUserFactory
 from tapir.coop.models import (
     IncomingPayment,
+    CreatePaymentLogEntry,
 )
 from tapir.utils.tests_utils import TapirFactoryTestBase
 
@@ -14,6 +15,8 @@ class TestIncomingPayments(TapirFactoryTestBase):
     NORMAL_MEMBER_2_NAME = "Lisa"
     NORMAL_MEMBER_3_NAME = "Maggie"
     ADMIN_MEMBER_NAME = "Skinner"
+
+    VIEW_NAME_PAYMENT_LIST = "coop:incoming_payment_list"
 
     admin_member: TapirUser
     normal_member_1: TapirUser
@@ -46,7 +49,7 @@ class TestIncomingPayments(TapirFactoryTestBase):
         ]
 
         self.login_as_user(self.normal_member_1)
-        response = self.client.get(reverse("coop:incoming_payment_list"))
+        response = self.client.get(reverse(self.VIEW_NAME_PAYMENT_LIST))
         self.assertEqual(response.status_code, 200)
 
         for payment in visible_payments:
@@ -60,7 +63,7 @@ class TestIncomingPayments(TapirFactoryTestBase):
         self.create_incoming_payment(self.normal_member_2, self.normal_member_1),
 
         self.login_as_user(self.normal_member_1)
-        response = self.client.get(reverse("coop:incoming_payment_list"))
+        response = self.client.get(reverse(self.VIEW_NAME_PAYMENT_LIST))
         response_content = response.content.decode()
 
         self.assertIn(self.NORMAL_MEMBER_1_NAME, response_content)
@@ -70,7 +73,7 @@ class TestIncomingPayments(TapirFactoryTestBase):
     def test_admin_member_sees_all_names(self):
         self.create_incoming_payment(self.normal_member_1, self.normal_member_2),
         self.login_as_user(self.admin_member)
-        response = self.client.get(reverse("coop:incoming_payment_list"))
+        response = self.client.get(reverse(self.VIEW_NAME_PAYMENT_LIST))
         response_content = response.content.decode()
 
         self.assertIn(self.ADMIN_MEMBER_NAME, response_content)
@@ -103,3 +106,25 @@ class TestIncomingPayments(TapirFactoryTestBase):
             response.content.decode(),
             "Payment should not be visible because it does not concern the logged in member.",
         )
+
+    def test_add_payment_creates_logentry(self):
+        self.assertEqual(CreatePaymentLogEntry.objects.count(), 0)
+
+        self.login_as_user(self.admin_member)
+        response = self.client.post(
+            reverse("coop:incoming_payment_create"),
+            {
+                "paying_member": self.normal_member_1.share_owner.id,
+                "credited_member": self.normal_member_1.share_owner.id,
+                "amount": 100,
+                "payment_date": timezone.now().date(),
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(CreatePaymentLogEntry.objects.count(), 1)
+        log_entry = CreatePaymentLogEntry.objects.first()
+        self.assertEqual(log_entry.amount, 100)
+        self.assertEqual(log_entry.payment_date, timezone.now().date())

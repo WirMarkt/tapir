@@ -1,9 +1,11 @@
+import datetime
+
 from django import template
 
+from tapir.accounts.models import TapirUser
 from tapir.coop.models import (
     ShareOwner,
-    FinancingCampaign,
-    FinancingSource,
+    MemberStatus,
 )
 
 register = template.Library()
@@ -13,33 +15,34 @@ register = template.Library()
     "coop/user_coop_share_ownership_list_tag.html", takes_context=True
 )
 def share_owner_ownership_list(context, share_owner: ShareOwner):
-    context["owner"] = share_owner
+    context["share_owner"] = share_owner
     return context
 
 
-@register.inclusion_tag("coop/shop_extension_progress_bar.html", takes_context=True)
-def shop_extension_progress_bar(context):
-    campaign = FinancingCampaign.objects.filter(is_active=True).first()
-    context["shop_extension_campaign_is_active"] = campaign is not None
-    if campaign is None:
-        return context
+@register.inclusion_tag("coop/active_members_progress_bar.html", takes_context=True)
+def active_members_progress_bar(context):
+    total_active_members = ShareOwner.objects.with_status(MemberStatus.ACTIVE)
+    active_members_on_start_date = ShareOwner.objects.with_status(
+        MemberStatus.ACTIVE, datetime.date(year=2022, month=11, day=15)
+    )
 
-    context["shop_extension_campaign_goal"] = campaign.goal
-    context["shop_extension_campaign_name"] = campaign.name
+    member_count_on_start_date = TapirUser.objects.filter(
+        share_owner__in=active_members_on_start_date
+    ).count()
+    context["member_count_on_start_date"] = member_count_on_start_date
 
-    sources = dict()
-    progress_bar_colors = ["bg-primary", "bg-success", "bg-warning"]
-    for source_index, source in enumerate(
-        FinancingSource.objects.filter(campaign=campaign)
-    ):
-        source_context = dict()
-        source_context["width"] = round(
-            100 * float(source.raised_amount) / campaign.goal
-        )
-        source_context["color"] = progress_bar_colors[
-            source_index % len(progress_bar_colors)
-        ]
-        sources[source.name] = source_context
-    context["shop_extension_sources"] = sources
+    new_member_count_since_start_date = (
+        TapirUser.objects.filter(share_owner__in=total_active_members).count()
+        - member_count_on_start_date
+    )
+    context["new_member_count_since_start_date"] = new_member_count_since_start_date
 
+    target_member_count = 1000
+    context["target_member_count"] = target_member_count
+    context["progress_on_start_date"] = round(
+        100 * member_count_on_start_date / target_member_count
+    )
+    context["progress_since_start_date"] = round(
+        100 * new_member_count_since_start_date / target_member_count
+    )
     return context

@@ -8,7 +8,6 @@ from django.db.models import Sum
 from django.shortcuts import redirect, get_object_or_404
 from django.template.defaulttags import register
 from django.utils import timezone
-from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
@@ -21,7 +20,11 @@ from django_tables2 import SingleTableView
 from django_tables2.export import ExportMixin
 
 from tapir.accounts.models import TapirUser
+from tapir.core.config import TAPIR_TABLE_CLASSES, TAPIR_TABLE_TEMPLATE
+from tapir.core.views import TapirFormMixin
 from tapir.log.util import freeze_for_log
+from tapir.log.views import UpdateViewLogMixin
+from tapir.settings import PERMISSION_COOP_MANAGE, PERMISSION_SHIFTS_MANAGE
 from tapir.shifts.forms import (
     ShiftUserDataForm,
     CreateShiftAccountEntryForm,
@@ -40,6 +43,7 @@ from tapir.shifts.models import (
     ShiftAccountEntry,
 )
 from tapir.shifts.templatetags.shifts import shift_name_as_class
+from tapir.utils.shortcuts import get_html_link
 
 
 class SelectedUserViewMixin:
@@ -59,13 +63,41 @@ class SelectedUserViewMixin:
         return context
 
 
-class EditShiftUserDataView(PermissionRequiredMixin, UpdateView):
-    permission_required = "shifts.manage"
+class EditShiftUserDataView(
+    PermissionRequiredMixin, UpdateViewLogMixin, TapirFormMixin, UpdateView
+):
+    permission_required = PERMISSION_SHIFTS_MANAGE
     model = ShiftUserData
     form_class = ShiftUserDataForm
 
     def get_success_url(self):
         return self.object.user.get_absolute_url()
+
+    def form_valid(self, form):
+        with transaction.atomic():
+            response = super().form_valid(form)
+
+            new_frozen = freeze_for_log(form.instance)
+            if self.old_object_frozen != new_frozen:
+                UpdateShiftUserDataLogEntry().populate(
+                    old_frozen=self.old_object_frozen,
+                    new_frozen=new_frozen,
+                    tapir_user=self.object.user,
+                    actor=self.request.user,
+                ).save()
+
+            return response
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data()
+        tapir_user: TapirUser = self.object.user
+        context_data["page_title"] = _("Edit user shift data: %(name)s") % {
+            "name": tapir_user.get_display_name()
+        }
+        context_data["card_title"] = _("Edit user shift data: %(name)s") % {
+            "name": tapir_user.get_html_link()
+        }
+        return context_data
 
 
 def get_shift_slot_names():
@@ -88,34 +120,33 @@ def dictionary_get(dic, key):
 
 @require_POST
 @csrf_protect
-@permission_required("shifts.manage")
+@permission_required(PERMISSION_SHIFTS_MANAGE)
 def set_user_attendance_mode_flying(request, user_pk):
     return _set_user_attendance_mode(request, user_pk, ShiftAttendanceMode.FLYING)
 
 
 @require_POST
 @csrf_protect
-@permission_required("shifts.manage")
+@permission_required(PERMISSION_SHIFTS_MANAGE)
 def set_user_attendance_mode_regular(request, user_pk):
     return _set_user_attendance_mode(request, user_pk, ShiftAttendanceMode.REGULAR)
 
 
 def _set_user_attendance_mode(request, user_pk, attendance_mode):
-    u = get_object_or_404(TapirUser, pk=user_pk)
-    old_shift_user_data = freeze_for_log(u.shift_user_data)
+    user = get_object_or_404(TapirUser, pk=user_pk)
+    old_shift_user_data = freeze_for_log(user.shift_user_data)
 
     with transaction.atomic():
-        u.shift_user_data.attendance_mode = attendance_mode
-        u.shift_user_data.save()
-        log_entry = UpdateShiftUserDataLogEntry().populate(
+        user.shift_user_data.attendance_mode = attendance_mode
+        user.shift_user_data.save()
+        UpdateShiftUserDataLogEntry().populate(
             actor=request.user,
-            user=u,
+            tapir_user=user,
             old_frozen=old_shift_user_data,
-            new_model=u.shift_user_data,
-        )
-        log_entry.save()
+            new_frozen=freeze_for_log(user.shift_user_data),
+        ).save()
 
-    return redirect(u)
+    return redirect(user)
 
 
 class UserShiftAccountLog(PermissionRequiredMixin, TemplateView):
@@ -127,7 +158,7 @@ class UserShiftAccountLog(PermissionRequiredMixin, TemplateView):
     def get_permission_required(self):
         if self.request.user == self.get_target_user():
             return []
-        return ["shifts.manage"]
+        return [PERMISSION_SHIFTS_MANAGE]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
@@ -138,10 +169,10 @@ class UserShiftAccountLog(PermissionRequiredMixin, TemplateView):
         return context
 
 
-class CreateShiftAccountEntryView(PermissionRequiredMixin, CreateView):
+class CreateShiftAccountEntryView(PermissionRequiredMixin, TapirFormMixin, CreateView):
     model = ShiftAccountEntry
     form_class = CreateShiftAccountEntryForm
-    permission_required = "shifts.manage"
+    permission_required = PERMISSION_SHIFTS_MANAGE
 
     def get_target_user(self) -> TapirUser:
         return TapirUser.objects.get(pk=self.kwargs["user_pk"])
@@ -151,9 +182,15 @@ class CreateShiftAccountEntryView(PermissionRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data()
-        context["user"] = self.get_target_user()
-        return context
+        context_data = super().get_context_data(**kwargs)
+        tapir_user = self.get_target_user()
+        context_data["page_title"] = _("Shift account: %(name)s") % {
+            "name": tapir_user.get_display_name()
+        }
+        context_data["card_title"] = _(
+            "Create manual shift account entry for:  %(link)s"
+        ) % {"link": tapir_user.get_html_link()}
+        return context_data
 
     def get_success_url(self):
         return self.get_target_user().get_absolute_url()
@@ -198,7 +235,7 @@ class ShiftDetailView(LoginRequiredMixin, DetailView):
 
 class ShiftDayPrintableView(PermissionRequiredMixin, TemplateView):
     template_name = "shifts/shift_day_printable.html"
-    permission_required = "shifts.manage"
+    permission_required = PERMISSION_SHIFTS_MANAGE
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
@@ -215,7 +252,7 @@ class ShiftTemplateDetail(LoginRequiredMixin, SelectedUserViewMixin, DetailView)
 class ShiftUserDataTable(django_tables2.Table):
     class Meta:
         model = ShiftUserData
-        template_name = "django_tables2/bootstrap4.html"
+        template_name = TAPIR_TABLE_TEMPLATE
         fields = [
             "account_balance",
             "attendance_mode",
@@ -226,6 +263,7 @@ class ShiftUserDataTable(django_tables2.Table):
             "attendance_mode",
         )
         order_by = "account_balance"
+        attrs = {"class": TAPIR_TABLE_CLASSES}
 
     display_name = django_tables2.Column(
         empty_values=(), verbose_name="Name", orderable=False
@@ -233,10 +271,8 @@ class ShiftUserDataTable(django_tables2.Table):
     email = django_tables2.Column(empty_values=(), orderable=False, visible=False)
 
     def render_display_name(self, value, record: ShiftUserData):
-        return format_html(
-            "<a href={}>{}</a>",
-            record.user.get_absolute_url(),
-            record.user.get_display_name(),
+        return get_html_link(
+            record.user.get_absolute_url(), record.user.get_display_name()
         )
 
     def value_display_name(self, value, record: ShiftUserData):
@@ -250,7 +286,7 @@ class MembersOnAlertView(PermissionRequiredMixin, ExportMixin, SingleTableView):
     table_class = ShiftUserDataTable
     model = ShiftUserData
     template_name = "shifts/members_on_alert_list.html"
-    permission_required = "coop.manage"
+    permission_required = PERMISSION_COOP_MANAGE
 
     export_formats = ["csv", "json"]
 
@@ -258,6 +294,7 @@ class MembersOnAlertView(PermissionRequiredMixin, ExportMixin, SingleTableView):
         return (
             super()
             .get_queryset()
+            .prefetch_related("user")
             .annotate(account_balance=Sum("user__shift_account_entries__value"))
             .filter(account_balance__lt=-1)
             .order_by("user__date_joined")

@@ -51,7 +51,7 @@ class ShiftUserDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShiftUserData
-        fields = "__all__"
+        fields = ["capabilities", "known_capabilities"]
 
     @staticmethod
     def get_known_capabilities(obj):

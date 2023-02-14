@@ -1,5 +1,8 @@
 import datetime
 
+import phonenumbers
+from unidecode import unidecode
+
 from tapir.accounts.models import TapirUser
 from tapir.utils.models import get_country_code
 from tapir.utils.user_utils import UserUtils
@@ -27,7 +30,11 @@ class JsonUser:
         self.first_name = parsed_json["name"]["first"]
         self.last_name = parsed_json["name"]["last"]
         self.email = parsed_json["email"]
-        self.phone_number = parsed_json["phone"].replace("-", "")
+
+        phone_number = phonenumbers.parse(parsed_json["phone"].replace("-", ""), "DE")
+        if not phonenumbers.is_valid_number(phone_number):
+            phone_number = "+4930182722720"  # Olaf
+        self.phone_number = phone_number
 
         date_of_birth = parsed_json["dob"]["date"].replace("Z", "")
         self.birthdate = datetime.datetime.fromisoformat(date_of_birth).date()
@@ -54,7 +61,7 @@ class JsonUser:
         self.num_shares = max(parsed_json["location"]["street"]["number"] % 10, 1)
 
     def get_username(self) -> str:
-        return self.first_name.lower() + "." + self.last_name.lower()
+        return unidecode(self.first_name.lower() + "." + self.last_name.lower())
 
     def get_display_name(self) -> str:
         return UserUtils.build_display_name(self.first_name, self.last_name)

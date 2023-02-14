@@ -3,6 +3,11 @@
 {% load django_bootstrap5 %}
 {% load i18n %}
 {% load static %}
+{% load core %}
+
+{% block title %}
+    {{ card_title }}
+{% endblock %}
 
 {% block head %}
     {{ block.super }}
@@ -13,7 +18,7 @@
     <div class="container">
         <div class="card m-2" id="shift_form_card">
             <h5 class="card-header d-flex justify-content-between align-items-center">
-                {% translate "Add a slot to " %}{{ shift_name }}
+                {{ card_title }}
             </h5>
             <ul class="list-group list-group-flush">
                 {% if not form.instance.pk %}
@@ -28,7 +33,7 @@
                         {% csrf_token %}
                         {% bootstrap_form form %}
                         <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn tapir-btn btn-primary">
+                            <button type="submit" class="{% tapir_button_action %}">
                                 <span class="material-icons">save</span>
                                 {% translate 'Save' %}
                             </button>

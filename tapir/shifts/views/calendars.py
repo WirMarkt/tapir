@@ -9,6 +9,8 @@ from django.utils.safestring import mark_safe
 from django.views.generic import TemplateView
 from weasyprint import HTML
 
+from tapir.coop.pdfs import CONTENT_TYPE_PDF
+from tapir.settings import PERMISSION_SHIFTS_MANAGE
 from tapir.shifts.models import (
     Shift,
     WEEKDAY_CHOICES,
@@ -18,7 +20,7 @@ from tapir.shifts.models import (
 from tapir.shifts.templatetags.shifts import get_week_group
 from tapir.shifts.utils import ColorHTMLCalendar
 from tapir.shifts.views.views import get_shift_slot_names, SelectedUserViewMixin
-from tapir.utils.shortcuts import get_monday
+from tapir.utils.shortcuts import get_monday, set_header_for_file_download
 
 
 class ShiftCalendarBaseView(TemplateView):
@@ -81,7 +83,7 @@ class ShiftCalendarFutureView(LoginRequiredMixin, ShiftCalendarBaseView):
 
 
 class ShiftCalendarPastView(PermissionRequiredMixin, ShiftCalendarBaseView):
-    permission_required = "shifts.manage"
+    permission_required = PERMISSION_SHIFTS_MANAGE
     template_name = "shifts/shift_calendar_past.html"
 
     def get_queryset(self):
@@ -174,10 +176,10 @@ class ShiftTemplateGroupCalendarAsPdf(ShiftTemplateGroupCalendar):
 
     def get(self, *args, **kwargs):
         context = self.get_context_data()
-        response = HttpResponse(content_type="application/pdf")
-        response[
-            "Content-Disposition"
-        ] = f"filename=shiftcalendar_{context['displayed_year']}.pdf"
+        response = HttpResponse(content_type=CONTENT_TYPE_PDF)
+        set_header_for_file_download(
+            response, f"shiftcalendar_{context['displayed_year']}"
+        )
         html = context["rendered_calendar"]
         HTML(string=html).write_pdf(
             response, stylesheets=["tapir/shifts/static/shifts/css/calendar.css"]

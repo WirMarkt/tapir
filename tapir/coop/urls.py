@@ -101,6 +101,11 @@ urlpatterns = [
         name="shareowner_membership_confirmation",
     ),
     path(
+        "member/<int:pk>/extra_shares_confirmation",
+        views.shareowner_extra_shares_confirmation,
+        name="shareowner_extra_shares_confirmation",
+    ),
+    path(
         "member/<int:pk>/membership_agreement",
         views.shareowner_membership_agreement,
         name="shareowner_membership_agreement",
@@ -151,21 +156,6 @@ urlpatterns = [
         name="matching_program_list",
     ),
     path(
-        "welcome_desk_search",
-        views.WelcomeDeskSearchView.as_view(),
-        name="welcome_desk_search",
-    ),
-    path(
-        "welcome_desk_member/<int:pk>",
-        views.WelcomeDeskShareOwnerView.as_view(),
-        name="welcome_desk_share_owner",
-    ),
-    path(
-        "financing_campaign/<int:pk>/edit",
-        views.FinancingCampaignUpdateView.as_view(),
-        name="financing_campaign_update",
-    ),
-    path(
         "member_count_evolution_json",
         views.MemberCountEvolutionJsonView.as_view(),
         name="member_count_evolution_json",
@@ -174,6 +164,11 @@ urlpatterns = [
         "share_count_evolution_json",
         views.ShareCountEvolutionJsonView.as_view(),
         name="share_count_evolution_json",
+    ),
+    path(
+        "member_age_distribution_json",
+        views.MemberAgeDistributionJsonView.as_view(),
+        name="member_age_distribution_json",
     ),
     path(
         "payments/list",

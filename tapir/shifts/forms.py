@@ -7,6 +7,7 @@ from django_select2.forms import Select2Widget
 
 from tapir.accounts.models import TapirUser
 from tapir.coop.models import ShareOwner
+from tapir.settings import PERMISSION_SHIFTS_MANAGE
 from tapir.shifts.models import (
     Shift,
     ShiftAttendanceTemplate,
@@ -18,6 +19,7 @@ from tapir.shifts.models import (
     ShiftAccountEntry,
     ShiftExemption,
     SHIFT_SLOT_WARNING_CHOICES,
+    ShiftTemplate,
 )
 from tapir.utils.forms import DateInputTapir
 
@@ -71,6 +73,7 @@ class TapirUserChoiceField(ModelChoiceField):
     def __init__(
         self, queryset=TapirUser.objects.filter(share_owner__isnull=False), **kwargs
     ):
+        queryset = queryset.prefetch_related("share_owner")
         super().__init__(queryset=queryset, **kwargs)
 
     def label_from_instance(self, obj: TapirUser):
@@ -82,6 +85,7 @@ class ShareOwnerChoiceField(ModelChoiceField):
     widget = Select2Widget()
 
     def __init__(self, queryset=ShareOwner.objects.all(), **kwargs):
+        queryset = queryset.prefetch_related("user")
         super().__init__(queryset=queryset, **kwargs)
 
     def label_from_instance(self, obj: ShareOwner):
@@ -168,7 +172,9 @@ class RegisterUserToShiftSlotForm(MissingCapabilitiesWarningMixin):
         self.slot = kwargs.pop("slot", None)
         self.request_user = kwargs.pop("request_user", None)
         super().__init__(*args, **kwargs)
-        self.fields["user"].disabled = not self.request_user.has_perm("shifts.manage")
+        self.fields["user"].disabled = not self.request_user.has_perm(
+            PERMISSION_SHIFTS_MANAGE
+        )
         for warning in self.slot.warnings:
             self.fields[f"warning_{warning}"] = forms.BooleanField(
                 label=SHIFT_SLOT_WARNING_CHOICES[warning]
@@ -180,11 +186,11 @@ class RegisterUserToShiftSlotForm(MissingCapabilitiesWarningMixin):
     def clean_user_to_register(self):
         user_to_register = self.cleaned_data["user"]
         if (
-            not self.request_user.has_perm("shifts.manage")
+            not self.request_user.has_perm(PERMISSION_SHIFTS_MANAGE)
             and user_to_register.pk != self.request_user.pk
         ):
             raise PermissionDenied(
-                _("You need the shifts.manage permission to do this."), code="invalid"
+                _("You need the shifts.manage permission to do this.")
             )
         if self.slot.shift.slots.filter(attendances__user=user_to_register).exists():
             raise ValidationError(
@@ -324,3 +330,51 @@ class ShiftCancelForm(forms.ModelForm):
     class Meta:
         model = Shift
         fields = ["cancelled_reason"]
+
+
+class ShiftTemplateForm(forms.ModelForm):
+    class Meta:
+        model = ShiftTemplate
+        fields = [
+            "name",
+            "description",
+            "group",
+            "num_required_attendances",
+            "weekday",
+            "start_time",
+            "end_time",
+        ]
+        widgets = {
+            "start_time": forms.widgets.TimeInput(
+                attrs={"type": "time"}, format="%H:%M"
+            ),
+            "end_time": forms.widgets.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+        }
+
+    check_update_future_shifts = BooleanField(
+        label=_(
+            "I understand that updating this ABCD shift will update all the corresponding future shifts"
+        ),
+        required=True,
+    )
+
+
+class ShiftSlotTemplateForm(forms.ModelForm):
+    class Meta:
+        model = ShiftSlotTemplate
+        fields = ["name", "required_capabilities", "warnings"]
+        widgets = {
+            "required_capabilities": forms.widgets.CheckboxSelectMultiple(
+                choices=SHIFT_USER_CAPABILITY_CHOICES.items()
+            ),
+            "warnings": forms.widgets.CheckboxSelectMultiple(
+                choices=SHIFT_SLOT_WARNING_CHOICES.items()
+            ),
+        }
+
+    check_update_future_shifts = BooleanField(
+        label=_(
+            "I understand that adding or editing a slot to this ABCD shift will affect all the corresponding future shifts"
+        ),
+        required=True,
+    )

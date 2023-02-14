@@ -1,10 +1,9 @@
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.core.mail import EmailMessage
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from django.template.loader import render_to_string
-from django.utils import timezone, translation
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
@@ -14,8 +13,10 @@ from django.views.generic import (
     FormView,
 )
 
-from tapir import settings
-from tapir.settings import FROM_EMAIL_MEMBER_OFFICE
+from tapir.core.views import TapirFormMixin
+from tapir.settings import PERMISSION_SHIFTS_MANAGE
+from tapir.shifts.emails.shift_missed_email import ShiftMissedEmail
+from tapir.shifts.emails.stand_in_found_email import StandInFoundEmail
 from tapir.shifts.forms import (
     ShiftAttendanceTemplateForm,
     UpdateShiftAttendanceForm,
@@ -30,6 +31,7 @@ from tapir.shifts.models import (
     DeleteShiftAttendanceTemplateLogEntry,
     CreateShiftAttendanceLogEntry,
     UpdateShiftAttendanceStateLogEntry,
+    ShiftAttendanceTakenOverLogEntry,
 )
 from tapir.shifts.views.views import SelectedUserViewMixin
 from tapir.utils.shortcuts import safe_redirect
@@ -38,7 +40,7 @@ from tapir.utils.shortcuts import safe_redirect
 class RegisterUserToShiftSlotTemplateView(
     PermissionRequiredMixin, SelectedUserViewMixin, CreateView
 ):
-    permission_required = "shifts.manage"
+    permission_required = PERMISSION_SHIFTS_MANAGE
     model = ShiftAttendanceTemplate
     template_name = "shifts/register_user_to_shift_slot_template.html"
     form_class = ShiftAttendanceTemplateForm
@@ -86,14 +88,11 @@ class RegisterUserToShiftSlotTemplateView(
                 attendance.save()
                 attendance.update_shift_account_entry(shift.cancelled_reason)
 
-            log_entry = CreateShiftAttendanceTemplateLogEntry().populate(
+            CreateShiftAttendanceTemplateLogEntry().populate(
                 actor=self.request.user,
-                user=self.object.user,
-                model=shift_attendance_template,
-            )
-            log_entry.slot_template_name = self.object.slot_template.name
-            log_entry.shift_template = self.object.slot_template.shift_template
-            log_entry.save()
+                tapir_user=self.object.user,
+                shift_attendance_template=shift_attendance_template,
+            ).save()
 
         return response
 
@@ -132,7 +131,7 @@ class UpdateShiftAttendanceStateBase(PermissionRequiredMixin, UpdateView):
         )
         if self_unregister or look_for_standing or cancel_look_for_standing:
             return []
-        return ["shifts.manage"]
+        return [PERMISSION_SHIFTS_MANAGE]
 
     def get_success_url(self):
         return self.get_object().slot.shift.get_absolute_url()
@@ -146,18 +145,18 @@ class UpdateShiftAttendanceStateBase(PermissionRequiredMixin, UpdateView):
                 attendance.state = self.kwargs["state"]
                 attendance.save()
 
-            log_entry = UpdateShiftAttendanceStateLogEntry().populate(
+            UpdateShiftAttendanceStateLogEntry().populate(
                 actor=self.request.user,
-                user=attendance.user,
-                model=attendance,
-            )
-            log_entry.slot_name = attendance.slot.name
-            log_entry.shift = attendance.slot.shift
-            log_entry.state = attendance.state
-            log_entry.save()
+                tapir_user=attendance.user,
+                attendance=attendance,
+            ).save()
 
             if attendance.state == ShiftAttendance.State.MISSED:
-                self.send_shift_missed_email()
+                attendance = self.get_attendance()
+                mail = ShiftMissedEmail(shift=attendance.slot.shift)
+                mail.send_to_tapir_user(
+                    actor=self.request.user, recipient=attendance.user
+                )
 
             description = None
             if "description" in form.data:
@@ -166,36 +165,14 @@ class UpdateShiftAttendanceStateBase(PermissionRequiredMixin, UpdateView):
 
             return response
 
-    def send_shift_missed_email(self):
-        attendance = self.get_attendance()
-
-        with translation.override(attendance.user.preferred_language):
-            mail = EmailMessage(
-                subject=_("You missed your shift!"),
-                body=render_to_string(
-                    [
-                        "shifts/email/shift_missed.html",
-                        "shifts/email/shift_missed.default.html",
-                    ],
-                    {
-                        "tapir_user": attendance.user,
-                        "shift": attendance.slot.shift,
-                        "contact_email_address": settings.EMAIL_ADDRESS_MEMBER_OFFICE,
-                        "coop_name": settings.COOP_NAME,
-                    },
-                ),
-                from_email=FROM_EMAIL_MEMBER_OFFICE,
-                to=[attendance.user.email],
-            )
-            mail.content_subtype = "html"
-            mail.send()
-
 
 class UpdateShiftAttendanceStateView(UpdateShiftAttendanceStateBase):
     fields = []
 
 
-class UpdateShiftAttendanceStateWithFormView(UpdateShiftAttendanceStateBase):
+class UpdateShiftAttendanceStateWithFormView(
+    TapirFormMixin, UpdateShiftAttendanceStateBase
+):
     form_class = UpdateShiftAttendanceForm
     get_state_from_kwargs = False
 
@@ -204,23 +181,35 @@ class UpdateShiftAttendanceStateWithFormView(UpdateShiftAttendanceStateBase):
         kwargs.update({"state": self.kwargs["state"]})
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        attendance: ShiftAttendance = self.object
+        context["page_title"] = _("Shift attendance: %(name)s") % {
+            "name": attendance.user.get_display_name()
+        }
+        context["card_title"] = _(
+            "Updating shift attendance: %(member_link)s, %(slot_link)s"
+            % {
+                "member_link": attendance.user.get_html_link(),
+                "slot_link": attendance.slot.get_html_link(),
+            }
+        )
+        return context
+
 
 @require_POST
 @csrf_protect
-@permission_required("shifts.manage")
+@permission_required(PERMISSION_SHIFTS_MANAGE)
 def shift_attendance_template_delete(request, pk):
     shift_attendance_template = get_object_or_404(ShiftAttendanceTemplate, pk=pk)
     slot_template = shift_attendance_template.slot_template
 
     with transaction.atomic():
-        log_entry = DeleteShiftAttendanceTemplateLogEntry().populate(
+        DeleteShiftAttendanceTemplateLogEntry().populate(
             actor=request.user,
-            user=shift_attendance_template.user,
-            model=shift_attendance_template,
-        )
-        log_entry.slot_template_name = slot_template.name
-        log_entry.shift_template = slot_template.shift_template
-        log_entry.save()
+            tapir_user=shift_attendance_template.user,
+            shift_attendance_template=shift_attendance_template,
+        ).save()
 
         shift_attendance_template.cancel_attendances(timezone.now())
         shift_attendance_template.delete()
@@ -235,7 +224,7 @@ class RegisterUserToShiftSlotView(PermissionRequiredMixin, FormView):
     def get_permission_required(self):
         if self.get_slot().user_can_attend(self.request.user):
             return []
-        return ["shifts.manage"]
+        return [PERMISSION_SHIFTS_MANAGE]
 
     def get_slot(self) -> ShiftSlot:
         return get_object_or_404(ShiftSlot, pk=self.kwargs["slot_pk"])
@@ -256,12 +245,31 @@ class RegisterUserToShiftSlotView(PermissionRequiredMixin, FormView):
         return context
 
     def get_initial(self):
-        if self.request.user.has_perm("shifts.manage"):
+        if self.request.user.has_perm(PERMISSION_SHIFTS_MANAGE):
             return {}
         return {"user": self.request.user}
 
     def get_success_url(self):
         return self.get_slot().shift.get_absolute_url()
+
+    @staticmethod
+    def mark_stand_in_found_if_relevant(slot: ShiftSlot, actor: User):
+        attendances = ShiftAttendance.objects.filter(
+            slot=slot, state=ShiftAttendance.State.LOOKING_FOR_STAND_IN
+        )
+        if not attendances.exists():
+            return
+
+        attendance = attendances.first()
+        attendance.state = ShiftAttendance.State.CANCELLED
+        attendance.save()
+
+        ShiftAttendanceTakenOverLogEntry().populate(
+            actor=actor, tapir_user=attendance.user, attendance=attendance
+        ).save()
+
+        email = StandInFoundEmail(attendance.slot.shift)
+        email.send_to_tapir_user(actor=actor, recipient=attendance.user)
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -272,14 +280,11 @@ class RegisterUserToShiftSlotView(PermissionRequiredMixin, FormView):
             attendance = ShiftAttendance.objects.create(
                 user=user_to_register, slot=slot
             )
-            slot.mark_stand_in_found_if_relevant(self.request.user)
-            log_entry = CreateShiftAttendanceLogEntry().populate(
+            self.mark_stand_in_found_if_relevant(slot, self.request.user)
+            CreateShiftAttendanceLogEntry().populate(
                 actor=self.request.user,
-                user=user_to_register,
-                model=attendance,
-            )
-            log_entry.slot_name = attendance.slot.name
-            log_entry.shift = attendance.slot.shift
-            log_entry.save()
+                tapir_user=user_to_register,
+                attendance=attendance,
+            ).save()
 
         return response

@@ -2,24 +2,22 @@ from __future__ import annotations
 
 import calendar
 import datetime
-import time
 
+from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
-from django.core.mail import EmailMessage
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import Sum
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from django.template.loader import render_to_string
 from django.urls import reverse
-from django.utils import timezone, translation
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from tapir import settings
 from tapir.accounts.models import TapirUser
-from tapir.log.models import ModelLogEntry, UpdateModelLogEntry
-from tapir.settings import FROM_EMAIL_MEMBER_OFFICE
+from tapir.log.models import ModelLogEntry, UpdateModelLogEntry, LogEntry
 from tapir.utils.models import DurationModelMixin
+from tapir.utils.shortcuts import get_html_link, get_timezone_aware_datetime, get_monday
 
 
 class ShiftUserCapability:
@@ -31,6 +29,7 @@ class ShiftUserCapability:
     FIRST_AID = "first_aid"
     WELCOME_SESSION = "welcome_session"
     HANDLING_CHEESE = "handling_cheese"
+    TRAIN_CHEESE_HANDLERS = "train_cheese_handlers"
 
 
 SHIFT_USER_CAPABILITY_CHOICES = {
@@ -42,6 +41,7 @@ SHIFT_USER_CAPABILITY_CHOICES = {
     ShiftUserCapability.FIRST_AID: _("First Aid"),
     ShiftUserCapability.WELCOME_SESSION: _("Welcome Session"),
     ShiftUserCapability.HANDLING_CHEESE: _("Handling Cheese"),
+    ShiftUserCapability.TRAIN_CHEESE_HANDLERS: _("Train cheese handlers"),
 }
 
 
@@ -167,8 +167,6 @@ class ShiftTemplate(models.Model):
         null=False, blank=False, default=3
     )
 
-    # NOTE(Leon Handreke): This could be expanded in the future to allow more placement strategies
-    # TODO(Leon Handreke): Extra validation to ensure that it is not blank if part of a group
     weekday = models.IntegerField(blank=True, null=True, choices=WEEKDAY_CHOICES)
 
     start_time = models.TimeField(blank=False)
@@ -219,10 +217,8 @@ class ShiftTemplate(models.Model):
                     break
                 shift_date += datetime.timedelta(days=1)
 
-        start_time = datetime.datetime.combine(shift_date, self.start_time)
-        start_time = timezone.make_aware(start_time)
-        end_time = datetime.datetime.combine(shift_date, self.end_time)
-        end_time = timezone.make_aware(end_time)
+        start_time = get_timezone_aware_datetime(shift_date, self.start_time)
+        end_time = get_timezone_aware_datetime(shift_date, self.end_time)
 
         return Shift(
             shift_template=self,
@@ -255,77 +251,51 @@ class ShiftTemplate(models.Model):
         for slot_template in self.slot_templates.all():
             slot_template.update_future_slot_attendances(now)
 
-    def update_slots(
-        self, desired_slots, change_time: datetime.datetime, dry_run=False
+    def add_slot_template_and_update_future_shifts(
+        self, slot_name: str, required_capabilities: []
     ):
-        # desired_slots should be a map of slot_name -> target_number_of_slots
-        deletion_warnings = []
-        with transaction.atomic():
-            slots_to_delete = dict()
-            slots_to_create = dict()
-            for slot_name, slot_count in desired_slots.items():
-                current_slots = self.slot_templates.filter(name=slot_name)
-                if current_slots.count() > slot_count:
-                    slots_to_delete[slot_name] = current_slots.count() - slot_count
-                if current_slots.count() < slot_count:
-                    slots_to_create[slot_name] = slot_count - current_slots.count()
-
-            for slot_name, slot_count in slots_to_create.items():
-                for _ in range(slot_count):
-                    if dry_run:
-                        continue
-                    self.add_slot_template(slot_name, change_time)
-
-            for slot_name, slot_count in slots_to_delete.items():
-                nb_slots_left_to_delete = slot_count
-                all_slot_templates = self.slot_templates.filter(name=slot_name)
-                empty_slot_templates = all_slot_templates.filter(
-                    attendance_template__isnull=True
-                )[:nb_slots_left_to_delete]
-
-                for slot_template in empty_slot_templates:
-                    deletion_warnings.extend(
-                        slot_template.delete_self_and_warn_about_users_loosing_their_slots(
-                            change_time, dry_run
-                        )
-                    )
-                    nb_slots_left_to_delete -= 1
-
-                not_empty_slot_templates = all_slot_templates.filter(
-                    attendance_template__isnull=False
-                )[:nb_slots_left_to_delete]
-
-                for slot_template in not_empty_slot_templates:
-                    deletion_warnings.extend(
-                        slot_template.delete_self_and_warn_about_users_loosing_their_slots(
-                            change_time, dry_run
-                        )
-                    )
-
-        return deletion_warnings
-
-    def add_slot_template(
-        self,
-        slot_name: str,
-        change_time: datetime.datetime,
-        required_capabilities=None,
-    ) -> ShiftSlotTemplate:
-        if required_capabilities is None:
-            required_capabilities = []
-
         slot_template = ShiftSlotTemplate.objects.create(
             name=slot_name,
             shift_template=self,
             required_capabilities=required_capabilities,
         )
-
-        for shift in self.generated_shifts.filter(start_time__gt=change_time):
+        for shift in self.generated_shifts.filter(start_time__gt=timezone.now()):
             slot_template.create_slot_from_template(shift)
 
-        return slot_template
+    def update_future_generated_shifts_to_fit_this(self):
+        with transaction.atomic():
+            for shift in self.get_future_generated_shifts():
+                shift.update_to_fit_template()
+
+    def clean(self):
+        if self.start_time >= self.end_time:
+            raise ValidationError(
+                f"The shift must end after it starts. Given start time: {self.start_time}. Given end time: {self.end_time}"
+            )
 
 
-class ShiftSlotTemplate(models.Model):
+class RequiredCapabilitiesMixin:
+    # Théo 23.12.22 the required_capabilities field could be moved to this class, but we'd need to migrate
+    # the data from ShiftSlot and ShiftSlotTemplate to it first
+    def get_required_capabilities_display(self):
+        return ", ".join(
+            [
+                str(SHIFT_USER_CAPABILITY_CHOICES[capability])
+                for capability in self.required_capabilities
+            ]
+        )
+
+    def get_required_capabilities_dict(self):
+        """
+        returns required capabilites as dictionary with corresponding translatiom
+        """
+        return {
+            capability: _(SHIFT_USER_CAPABILITY_CHOICES[capability])
+            for capability in self.required_capabilities
+        }
+
+
+class ShiftSlotTemplate(RequiredCapabilitiesMixin, models.Model):
     name = models.CharField(blank=True, max_length=255)
     shift_template = models.ForeignKey(
         ShiftTemplate,
@@ -352,14 +322,6 @@ class ShiftSlotTemplate(models.Model):
         blank=True,
         null=False,
     )
-
-    # Whether this ShiftSlot is required to be filled
-    optional = models.BooleanField(default=False)
-
-    def get_required_capabilities_display(self):
-        return ", ".join(
-            [SHIFT_USER_CAPABILITY_CHOICES[c] for c in self.required_capabilities]
-        )
 
     def get_display_name(self):
         display_name = self.shift_template.get_display_name()
@@ -399,51 +361,7 @@ class ShiftSlotTemplate(models.Model):
             shift=shift,
             required_capabilities=self.required_capabilities,
             warnings=self.warnings,
-            optional=self.optional,
         )
-
-    def delete_self_and_warn_about_users_loosing_their_slots(
-        self, change_time: datetime.datetime, dry_run: bool
-    ):
-        deletion_warnings = []
-        for slot in self.generated_slots.all():
-            if slot.shift.start_time < change_time:
-                slot.slot_template = None
-                if not dry_run:
-                    slot.save()
-            else:
-                attendance = slot.get_valid_attendance()
-                if attendance and (
-                    self.get_attendance_template() is None
-                    or attendance.user != self.attendance_template.user
-                ):
-                    deletion_warnings.append(
-                        {
-                            "user": attendance.user,
-                            "slot_name": slot.get_display_name(),
-                            "is_ABCD": False,
-                        }
-                    )
-                for attendance in slot.attendances.all():
-                    if not dry_run:
-                        attendance.delete()
-                if not dry_run:
-                    slot.delete()
-
-        attendance_template = self.get_attendance_template()
-        if attendance_template is not None:
-            deletion_warnings.append(
-                {
-                    "user": attendance_template.user,
-                    "slot_name": self.get_display_name(),
-                    "is_ABCD": True,
-                }
-            )
-            if not dry_run:
-                attendance_template.delete()
-        if not dry_run:
-            self.delete()
-        return deletion_warnings
 
 
 class ShiftAttendanceTemplate(models.Model):
@@ -476,8 +394,19 @@ class ShiftAttendanceTemplateLogEntry(ModelLogEntry):
 
     # Don't link directly to the slot because it may be less stable than the shift
     slot_template_name = models.CharField(blank=True, max_length=255)
-    # TODO(Leon Handreke): Implement a system to decomission shifts
     shift_template = models.ForeignKey(ShiftTemplate, on_delete=models.PROTECT)
+
+    def populate(
+        self,
+        actor: User,
+        tapir_user: TapirUser,
+        shift_attendance_template: ShiftAttendanceTemplate,
+    ):
+        self.slot_template_name = shift_attendance_template.slot_template.name
+        self.shift_template = shift_attendance_template.slot_template.shift_template
+        return super().populate_base(
+            actor=actor, tapir_user=tapir_user, model=shift_attendance_template
+        )
 
 
 class CreateShiftAttendanceTemplateLogEntry(ShiftAttendanceTemplateLogEntry):
@@ -498,7 +427,6 @@ class Shift(models.Model):
         on_delete=models.PROTECT,
     )
 
-    # TODO(Leon Handreke): For generated shifts, leave this blank instead and use a getter?
     name = models.CharField(blank=False, max_length=255)
     num_required_attendances = models.PositiveIntegerField(
         verbose_name=_("Number of required attendances"),
@@ -540,7 +468,7 @@ class Shift(models.Model):
         display_name = "%s [%d/%d]" % (
             display_name,
             self.get_valid_attendances().count(),
-            self.get_required_slots().count(),
+            self.slots.count(),
         )
 
         return display_name
@@ -558,12 +486,6 @@ class Shift(models.Model):
     def get_absolute_url(self):
         return reverse("shifts:shift_detail", args=[self.pk])
 
-    def get_required_slots(self):
-        return self.slots.filter(optional=False)
-
-    def get_optional_slots(self):
-        return self.slots.filter(optional=True)
-
     def get_attendances(self) -> ShiftAttendance.ShiftAttendanceQuerySet:
         return ShiftAttendance.objects.filter(slot__shift=self)
 
@@ -577,6 +499,19 @@ class Shift(models.Model):
         if self.shift_template:
             return self.shift_template.num_required_attendances
         return self.num_required_attendances
+
+    def update_to_fit_template(self):
+        date = get_monday(self.start_time.date()) + datetime.timedelta(
+            days=self.shift_template.weekday
+        )
+        self.start_time = get_timezone_aware_datetime(
+            date, self.shift_template.start_time
+        )
+        self.end_time = get_timezone_aware_datetime(date, self.shift_template.end_time)
+        self.name = self.shift_template.name
+        self.description = self.shift_template.description
+        self.num_required_attendances = self.shift_template.num_required_attendances
+        self.save()
 
 
 class ShiftAttendanceLogEntry(ModelLogEntry):
@@ -595,6 +530,14 @@ class ShiftAttendanceLogEntry(ModelLogEntry):
             context["state_name"] = SHIFT_ATTENDANCE_STATES[self.state]
         return context
 
+    def populate(self, actor: User, tapir_user: TapirUser, attendance: ShiftAttendance):
+        self.slot_name = attendance.slot.name
+        self.shift = attendance.slot.shift
+        self.state = attendance.state
+        return super().populate_base(
+            actor=actor, tapir_user=tapir_user, model=attendance
+        )
+
 
 class CreateShiftAttendanceLogEntry(ShiftAttendanceLogEntry):
     template_name = "shifts/log/create_shift_attendance_log_entry.html"
@@ -604,7 +547,7 @@ class ShiftAttendanceTakenOverLogEntry(ShiftAttendanceLogEntry):
     template_name = "shifts/log/shift_attendance_taken_over_log_entry.html"
 
 
-class ShiftSlot(models.Model):
+class ShiftSlot(RequiredCapabilitiesMixin, models.Model):
     slot_template = models.ForeignKey(
         ShiftSlotTemplate,
         null=True,
@@ -636,31 +579,14 @@ class ShiftSlot(models.Model):
         null=False,
     )
 
-    # Whether this ShiftSlot is required to be filled
-    optional = models.BooleanField(default=False)
-
-    def get_required_capabilities_display(self):
-        return ", ".join(
-            [
-                str(SHIFT_USER_CAPABILITY_CHOICES[capability])
-                for capability in self.required_capabilities
-            ]
-        )
-
-    def get_required_capabilities_dict(self):
-        """
-        returns required capabilites as dictionary with corresponding translatiom
-        """
-        return {
-            capability: _(SHIFT_USER_CAPABILITY_CHOICES[capability])
-            for capability in self.required_capabilities
-        }
-
     def get_display_name(self):
         display_name = self.shift.get_display_name()
         if self.name:
             display_name = "{} {}".format(self.name, display_name)
         return display_name
+
+    def get_html_link(self):
+        return get_html_link(self.shift.get_absolute_url(), self.get_display_name())
 
     def get_valid_attendance(self) -> ShiftAttendance:
         return self.attendances.with_valid_state().first()
@@ -746,46 +672,11 @@ class ShiftSlot(models.Model):
         attendance.state = ShiftAttendance.State.PENDING
         attendance.save()
 
-    def mark_stand_in_found_if_relevant(self, actor: TapirUser):
-        attendances = ShiftAttendance.objects.filter(
-            slot=self, state=ShiftAttendance.State.LOOKING_FOR_STAND_IN
-        )
-        if not attendances.exists():
-            return
-
-        attendance = attendances.first()
-        attendance.state = ShiftAttendance.State.CANCELLED
-        attendance.save()
-
-        log_entry = ShiftAttendanceTakenOverLogEntry().populate(
-            actor=actor,
-            user=attendance.user,
-            model=attendance,
-        )
-        log_entry.slot_name = attendance.slot.name
-        log_entry.shift = attendance.slot.shift
-        log_entry.save()
-
-        with translation.override(attendance.user.preferred_language):
-            mail = EmailMessage(
-                subject=_("You found a stand-in!"),
-                body=render_to_string(
-                    [
-                        "shifts/email/stand_in_found.html",
-                        "shifts/email/stand_in_found.default.html",
-                    ],
-                    {
-                        "tapir_user": attendance.user,
-                        "shift": attendance.slot.shift,
-                        "contact_email_address": settings.EMAIL_ADDRESS_MEMBER_OFFICE,
-                        "coop_name": settings.COOP_NAME,
-                    },
-                ),
-                from_email=FROM_EMAIL_MEMBER_OFFICE,
-                to=[attendance.user.email],
-            )
-            mail.content_subtype = "html"
-            mail.send()
+    def update_slot_from_template(self):
+        self.name = self.slot_template.name
+        self.required_capabilities = self.slot_template.required_capabilities
+        self.warnings = self.slot_template.warnings
+        self.save()
 
 
 class ShiftAccountEntry(models.Model):
@@ -793,7 +684,7 @@ class ShiftAccountEntry(models.Model):
 
     Usually, a user will be debited one credit every four weeks and will be credited one for completing their shift.
 
-    Based on the the account balance and the dates of the entries, the penalties are calculated. For example, if the
+    Based on the account balance and the dates of the entries, the penalties are calculated. For example, if the
     balance has been -2 for four weeks (TBD, this is just an example), the cooperator's right to shop will be revoked.
     """
 
@@ -806,6 +697,9 @@ class ShiftAccountEntry(models.Model):
     # Date the transaction is debited, credited
     date = models.DateTimeField(blank=False)
     description = models.CharField(blank=True, max_length=255)
+    is_from_welcome_session = models.BooleanField(
+        blank=False, null=False, default=False
+    )
 
 
 class ShiftAttendance(models.Model):
@@ -841,6 +735,11 @@ class ShiftAttendance(models.Model):
         State.LOOKING_FOR_STAND_IN,
     ]
 
+    STATES_WHERE_THE_MEMBER_IS_EXPECTED_TO_SHOW_UP = [
+        State.PENDING,
+        State.LOOKING_FOR_STAND_IN,
+    ]
+
     state = models.IntegerField(choices=State.choices, default=State.PENDING)
 
     # Only filled if state is MISSED_EXCUSED
@@ -855,6 +754,9 @@ class ShiftAttendance(models.Model):
         related_name="shift_attendance",
     )
 
+    def get_state_display(self):
+        return SHIFT_ATTENDANCE_STATES[self.state]
+
     def is_valid(self):
         return self.state in ShiftAttendance.VALID_STATES
 
@@ -862,6 +764,10 @@ class ShiftAttendance(models.Model):
         return reverse(
             "shifts:update_shift_attendance_state_with_form", args=[self.pk, self.state]
         )
+
+    # helper function for less boilerplate in serialization
+    def get_shift(self):
+        return self.slot.shift
 
     def update_shift_account_entry(self, entry_description=""):
         if self.account_entry is not None:
@@ -927,6 +833,20 @@ class UpdateShiftAttendanceStateLogEntry(ShiftAttendanceLogEntry):
 
 class UpdateShiftUserDataLogEntry(UpdateModelLogEntry):
     template_name = "shifts/log/update_shift_user_data_log_entry.html"
+
+    def populate(
+        self,
+        old_frozen: dict,
+        new_frozen: dict,
+        tapir_user: TapirUser,
+        actor: User,
+    ):
+        return super().populate_base(
+            old_frozen=old_frozen,
+            new_frozen=new_frozen,
+            tapir_user=tapir_user,
+            actor=actor,
+        )
 
 
 class ShiftAttendanceMode:
@@ -1008,51 +928,6 @@ class ShiftUserData(models.Model):
     def is_currently_exempted_from_shifts(self, date=None):
         return self.get_current_shift_exemption(date) is not None
 
-    def send_shift_reminder_emails(self):
-        for attendance in ShiftAttendance.objects.with_valid_state().filter(
-            user=self.user,
-            slot__shift__start_time__gte=timezone.now(),
-            slot__shift__start_time__lte=timezone.now() + datetime.timedelta(days=7),
-            reminder_email_sent=False,
-        ):
-            self.send_shift_reminder_email(attendance)
-            time.sleep(0.1)
-
-    def send_shift_reminder_email(self, attendance: ShiftAttendance):
-        is_first_shift = not ShiftAttendance.objects.filter(
-            user=self.user, state=ShiftAttendance.State.DONE
-        ).exists()
-        with transaction.atomic() and translation.override(
-            self.user.preferred_language
-        ):
-            mail = EmailMessage(
-                subject=_("Your upcoming %(coop_name)s shift: %(shift)s")
-                % {
-                    "shift": attendance.slot.shift.get_display_name(),
-                    "coop_name": settings.COOP_NAME,
-                },
-                body=render_to_string(
-                    [
-                        "shifts/email/shift_reminder.html",
-                        "shifts/email/shift_reminder.default.html",
-                    ],
-                    {
-                        "tapir_user": self.user,
-                        "shift": attendance.slot.shift,
-                        "is_first_shift": is_first_shift,
-                        "contact_email_address": settings.EMAIL_ADDRESS_MEMBER_OFFICE,
-                        "coop_name": settings.COOP_NAME,
-                    },
-                ),
-                from_email=FROM_EMAIL_MEMBER_OFFICE,
-                to=[self.user.email],
-            )
-            mail.content_subtype = "html"
-            mail.send()
-
-            attendance.reminder_email_sent = True
-            attendance.save()
-
     def get_credit_requirement_for_cycle(self, cycle_start_date: datetime.date):
         if not hasattr(self.user, "share_owner") or self.user.share_owner is None:
             return 0
@@ -1087,7 +962,7 @@ class ShiftExemption(DurationModelMixin, models.Model):
 
     @staticmethod
     def get_attendances_cancelled_by_exemption(
-        user: TapirUser, start_date: datetime.date, end_date: datetime.date
+        user: TapirUser, start_date: datetime.date, end_date: datetime.date | None
     ):
         start_time = timezone.make_aware(
             datetime.datetime.combine(start_date, datetime.time(hour=0, minute=0))
@@ -1103,7 +978,9 @@ class ShiftExemption(DurationModelMixin, models.Model):
         attendances = ShiftAttendance.objects.filter(
             user=user,
             slot__shift__start_time__gte=start_time,
+            state__in=ShiftAttendance.STATES_WHERE_THE_MEMBER_IS_EXPECTED_TO_SHOW_UP,
         )
+
         if end_time:
             attendances = attendances.filter(slot__shift__end_time__lte=end_time)
 
@@ -1124,7 +1001,7 @@ class ShiftExemption(DurationModelMixin, models.Model):
 
     @staticmethod
     def must_unregister_from_abcd_shift(
-        start_date: datetime.date, end_date: datetime.date
+        start_date: datetime.date, end_date: datetime.date | None
     ):
         # Infinite exemption
         if not end_date:
@@ -1132,6 +1009,42 @@ class ShiftExemption(DurationModelMixin, models.Model):
         return (
             (end_date - start_date).days
             >= ShiftExemption.THRESHOLD_NB_CYCLES_UNREGISTER_FROM_ABCD_SHIFT * 4 * 7
+        )
+
+
+class CreateExemptionLogEntry(LogEntry):
+    start_date = models.DateField(null=False, blank=False)
+    end_date = models.DateField(null=True, blank=True, db_index=True)
+
+    template_name = "shifts/log/create_exemption_log_entry.html"
+
+    def populate(
+        self,
+        start_date: datetime.date,
+        end_date: datetime.date | None,
+        actor,
+        tapir_user,
+    ):
+        self.start_date = start_date
+        self.end_date = end_date
+        return super().populate_base(actor=actor, tapir_user=tapir_user)
+
+
+class UpdateExemptionLogEntry(UpdateModelLogEntry):
+    template_name = "shifts/log/update_exemption_log_entry.html"
+
+    def populate(
+        self,
+        old_frozen: dict,
+        new_frozen: dict,
+        tapir_user: TapirUser,
+        actor: User,
+    ):
+        return super().populate_base(
+            old_frozen=old_frozen,
+            new_frozen=new_frozen,
+            tapir_user=tapir_user,
+            actor=actor,
         )
 
 

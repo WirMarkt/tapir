@@ -3,6 +3,11 @@
 {% load django_bootstrap5 %}
 {% load static %}
 {% load i18n %}
+{% load core %}
+
+{% block title %}
+    {% translate "Login" %}
+{% endblock %}
 
 {% block head %}
     {{ block.super }}
@@ -31,22 +36,19 @@
                                    placeholder="Passwort" required="" id="id_password">
                             <div class="input-group-append" style="cursor: pointer;">
                                 <span title="{% translate 'Click here to show/hide the password' %}"
-                                      class="btn tapir-btn btn-outline-secondary" id="password_toggle" style="height: 100%;">
+                                      class="{% tapir_button_link %}" id="password_toggle" style="height: 100%;">
                                     <span id="password_toggle_icon" class="material-icons">visibility</span>
                                 </span>
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn tapir-btn btn-primary btn-block">
+                    <p>
+                        <a href="{% url "password_reset" %}">{% translate "Forgot your password or your username?" %}</a>
+                    </p>
+                    <button type="submit" class="{% tapir_button_action %} btn-block">
                         <span class="material-icons">login</span>
                         {% translate "Sign in" %}
                     </button>
-                    <div class="my-2">
-                        <a href="{% url "password_reset" %}">{% translate "Forgot your password?" %}</a>
-                    </div>
-                    <div class="my-2">
-                        <a href="{% url "coop:draftuser_register" %}">{% translate "Apply for membership" %}</a>
-                    </div>
                 </form>
             </div>
         </div>

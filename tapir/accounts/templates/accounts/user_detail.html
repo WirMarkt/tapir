@@ -7,6 +7,7 @@
 {% load coop %}
 {% load log %}
 {% load accounts %}
+{% load core %}
 
 {% block head %}
     {{ block.super }}
@@ -18,28 +19,28 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row row-cols-md-2">
-        <div class="col-md-6">
-            <div class="card m-2" id="tapir_user_detail_card">
-                <h5 class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                    <span>{% translate "Personal Data" %}</span>
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card mb-2" id="tapir_user_detail_card">
+                <h5 class="card-header d-flex justify-content-between align-items-center">
+                    {% translate "Personal Data" %}
                 </h5>
                 <div class="card-body">
                     <div class="row m-1">
-                        <div class="col-sm-4 fw-bold text-sm-end">{% translate "Name" %}:</div>
-                        <div class="col-sm-8" id="tapir_user_display_name">{{ object.get_display_name }}</div>
+                        <div class="col-4 fw-bold text-end">{% translate "Name" %}:</div>
+                        <div class="col-8" id="tapir_user_display_name">{{ object.get_display_name }}</div>
                     </div>
                     <div class="row m-1">
-                        <div class="col-sm-4 fw-bold text-sm-end">{% translate "Username" %}:</div>
-                        <div class="col-sm-8" id="tapir_user_username">{{ object.username }}</div>
+                        <div class="col-4 fw-bold text-end">{% translate "Username" %}:</div>
+                        <div class="col-8" id="tapir_user_username">{{ object.username }}</div>
                     </div>
                     <div class="row m-1">
-                        <div class="col-sm-4 fw-bold text-sm-end">{% translate "Email" %}:</div>
-                        <div class="col-sm-8" id="tapir_user_email">{{ object.email }}</div>
+                        <div class="col-4 fw-bold text-end">{% translate "Email" %}:</div>
+                        <div class="col-8" id="tapir_user_email">{{ object.email }}</div>
                     </div>
                     <div class="row m-1">
-                        <div class="col-sm-4 fw-bold text-sm-end">{% translate "Phone number" %}:</div>
-                        <div class="col-sm-8" id="tapir_user_phone_number">
+                        <div class="col-4 fw-bold text-end">{% translate "Phone number" %}:</div>
+                        <div class="col-8" id="tapir_user_phone_number">
                             {% if object.phone_number %}
                                 {{ object.phone_number|format_phone_number }}
                             {% else %}
@@ -48,8 +49,8 @@
                         </div>
                     </div>
                     <div class="row m-1">
-                        <div class="col-sm-4 fw-bold text-sm-end">{% translate "Birthdate" %}:</div>
-                        <div class="col-sm-8" id="tapir_user_birthdate">
+                        <div class="col-4 fw-bold text-end">{% translate "Birthdate" %}:</div>
+                        <div class="col-8" id="tapir_user_birthdate">
                             {% if object.birthdate %}
                                 {{ object.birthdate|date:"d.m.Y" }}
                             {% else %}
@@ -58,8 +59,8 @@
                         </div>
                     </div>
                     <div class="row m-1">
-                        <div class="col-sm-4 fw-bold text-sm-end">{% translate "Address" %}:</div>
-                        <div class="col-sm-8" id="tapir_user_address">
+                        <div class="col-4 fw-bold text-end">{% translate "Address" %}:</div>
+                        <div class="col-8" id="tapir_user_address">
                             {% if object.street and object.city %}
                                 {{ object.get_display_address }}
                             {% else %}
@@ -68,60 +69,64 @@
                         </div>
                     </div>
                     <div class="row m-1">
-                        <div class="col-sm-4 fw-bold text-sm-end">{% translate "Preferred Language" %}:</div>
-                        <div class="col-sm-8">{{ object.get_preferred_language_display }}</div>
+                        <div class="col-4 fw-bold text-end">{% translate "Preferred Language" %}:</div>
+                        <div class="col-8">{{ object.get_preferred_language_display }}</div>
                     </div>
                     {% if perms.accounts.manage %}
                         <div class="row m-1">
-                            <div class="col-sm-4 fw-bold text-sm-end">{% translate "Permissions" %}:</div>
-                            <div class="col-sm-8">{{ object.get_permissions_display }}</div>
+                            <div class="col-4 fw-bold text-end">{% translate "Permissions" %}:</div>
+                            <div class="col-8">{{ object.get_permissions_display }}</div>
                         </div>
                     {% endif %}
                     <div class="row m-1">
-                        <div class="col-sm-4 fw-bold text-sm-end">{% translate "Co-Purchaser" %}:</div>
-                        <div class="col-sm-8">
+                        <div class="col-4 fw-bold text-end">{% translate "Co-Purchaser" %}:</div>
+                        <div class="col-8">
                             {% if object.co_purchaser %}{{ object.co_purchaser }}{% else %}-{% endif %}
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-sm-end m-1 mt-3 flex-wrap">
-                        <div class="m-1">
-                            {% if perms.accounts.manage %}
+                    <div class="d-flex justify-content-sm-end m-1 mt-3">
+                        {% if perms.accounts.manage %}
+                            <div class="ms-1">
                                 <form method="post" action="{% url 'accounts:send_user_welcome_email' object.pk %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-info">
-                                        {% translate "Send account activation email" %}
+                                    <button type="submit" class="{% tapir_button_action %} ms-3">
+                                        <span class="material-icons">send</span>{% translate "Resend account activation email" %}
                                     </button>
                                 </form>
-                            {% endif %}
-                        </div>
+                            </div>
+                        {% endif %}
                         {% if object.pk == request.user.pk %}
-                        <div class="m-1">
-                            <a class="btn btn-sm btn-outline-info" href="{% url 'password_change' %}">{% translate "Change Password" %}</a>
-                        </div>
+                            <div class="ms-1">
+                                <a class="{% tapir_button_link_to_action %} ms-1" href="{% url 'password_change' %}"><span
+                                        class="material-icons">vpn_key</span>{% translate "Change Password" %}</a>
+                            </div>
                         {% endif %}
                         {% if perms.accounts.manage %}
-                        <div class="m-1">
-                            <a class="btn btn-sm btn-outline-info" href="{% url 'accounts:user_update' object.pk %}"
-                            id="tapir_user_edit_button">
-                                {% translate 'Edit' %}
-                            </a>
-                        </div>
+                            <div class="ms-1">
+                                <a class="{% tapir_button_link_to_action %}"
+                                   href="{% url 'accounts:user_update' object.pk %}"
+                                   id="tapir_user_edit_button">
+                                    <span class="material-icons">edit</span>{% translate 'Edit' %}
+                                </a>
+                            </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-xl-6">
             {% share_owner_ownership_list object.share_owner %}
         </div>
+    </div>
 
-        <div class="col-md-6">
+    <div class="row">
+        <div class="col-xl-6">
             {% user_shifts_overview object %}
         </div>
 
-        <div class="col-md-6">
+        <div class="col-xl-6">
             {% log_entry_list tapir_user=object %}
         </div>
     </div>

@@ -1,5 +1,6 @@
 import datetime
 
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q, Sum, Count, F, PositiveIntegerField
@@ -16,11 +17,12 @@ from tapir.utils.models import (
     CountryField,
     positive_number_validator,
 )
+from tapir.utils.shortcuts import get_html_link
 from tapir.utils.user_utils import UserUtils
 
 
 class ShareOwner(models.Model):
-    """ShareOwner represents an owner of a ShareOwnership.
+    """ShareOwner represents a share_owner of a ShareOwnership.
 
     Usually, this is just a proxy for the associated user. However, it may also be used to
     represent a person or company that does not have their own account.
@@ -114,7 +116,7 @@ class ShareOwner(models.Model):
             if fully_paid:
                 return annotated.filter(paid_amount__gte=F("expected_payments"))
             return annotated.filter(
-                Q(paid_amount__lte=F("expected_payments")) | Q(paid_amount=None)
+                Q(paid_amount__lt=F("expected_payments")) | Q(paid_amount=None)
             )
 
     objects = ShareOwnerQuerySet.as_manager()
@@ -161,6 +163,9 @@ class ShareOwner(models.Model):
             return self.company_name
         return UserUtils.build_display_name(self.first_name, self.last_name)
 
+    def get_html_link(self):
+        return get_html_link(url=self.get_absolute_url(), text=self.get_display_name())
+
     def get_display_address(self):
         return UserUtils.build_display_address(
             self.street, self.street_2, self.postcode, self.city
@@ -181,11 +186,17 @@ class ShareOwner(models.Model):
         return self.share_ownerships.active_temporal()
 
     def num_shares(self) -> int:
-        return ShareOwnership.objects.active_temporal().filter(owner=self).count()
+        return ShareOwnership.objects.active_temporal().filter(share_owner=self).count()
 
     def get_member_status(self):
-        oldest_active = self.get_oldest_active_share_ownership()
-        if oldest_active is None or not oldest_active.is_active:
+        # Here we try to use only share_ownerships.all() without filter or count(),
+        # because in list views the shares have been prefetched.
+        # If we do any filtering on self.share_ownerships, it would trigger one DB query per item in the list.
+        has_active_share = (
+            len([share for share in self.share_ownerships.all() if share.is_active()])
+            > 0
+        )
+        if not has_active_share:
             return MemberStatus.SOLD
 
         if self.is_investing:
@@ -237,11 +248,25 @@ def get_member_status_translation(searched_status: str) -> str:
 class UpdateShareOwnerLogEntry(UpdateModelLogEntry):
     template_name = "coop/log/update_share_owner_log_entry.html"
 
+    def populate(
+        self,
+        old_frozen: dict,
+        new_frozen: dict,
+        share_owner: ShareOwner,
+        actor: User,
+    ):
+        return super().populate_base(
+            old_frozen=old_frozen,
+            new_frozen=new_frozen,
+            share_owner=share_owner,
+            actor=actor,
+        )
+
 
 class ShareOwnership(DurationModelMixin, models.Model):
     """ShareOwnership represents ownership of a single share."""
 
-    owner = models.ForeignKey(
+    share_owner = models.ForeignKey(
         ShareOwner,
         related_name="share_ownerships",
         blank=False,
@@ -275,7 +300,10 @@ class ShareOwnership(DurationModelMixin, models.Model):
 
 class DeleteShareOwnershipLogEntry(ModelLogEntry):
     template_name = "coop/log/delete_share_ownership_log_entry.html"
-    exclude_fields = ["id", "owner"]
+    exclude_fields = ["id", "share_owner"]
+
+    def populate(self, share_owner: ShareOwner, actor, model):
+        return self.populate_base(share_owner=share_owner, actor=actor, model=model)
 
 
 class DraftUser(models.Model):
@@ -317,12 +345,10 @@ class DraftUser(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def get_absolute_url(self):
-        return reverse(
-            "coop:draftuser_detail",
-            args=[
-                self.pk,
-            ],
-        )
+        return reverse("coop:draftuser_detail", args=[self.pk])
+
+    def get_html_link(self):
+        return get_html_link(self.get_absolute_url(), self.get_display_name())
 
     def get_initial_amount(self):
         return self.num_shares * COOP_SHARE_PRICE + COOP_ENTRY_AMOUNT
@@ -341,6 +367,7 @@ class DraftUser(models.Model):
             and self.first_name
             and self.last_name
             and self.signed_membership_agreement
+            and self.num_shares > 0
         )
 
     def get_info(self):
@@ -349,29 +376,6 @@ class DraftUser(models.Model):
         to allow identical treatment in templates.
         """
         return self
-
-
-class FinancingCampaign(models.Model):
-    is_active = models.BooleanField(_("Currently active"), default=False, null=False)
-    name = models.CharField(_("Name"), max_length=150, blank=False, null=False)
-    goal = models.IntegerField(_("Goal"), blank=False, null=False)
-
-    def get_absolute_url(self):
-        return reverse("coop:financing_campaign_update", args=[self.pk])
-
-
-class FinancingSource(models.Model):
-    name = models.CharField(_("Name"), max_length=150, blank=False, null=False)
-    raised_amount = models.IntegerField(
-        _("Raised amount"), blank=False, null=False, default=0
-    )
-    campaign = models.ForeignKey(
-        FinancingCampaign,
-        related_name="sources",
-        blank=False,
-        null=False,
-        on_delete=models.CASCADE,
-    )
 
 
 class IncomingPayment(models.Model):
@@ -414,6 +418,24 @@ class IncomingPayment(models.Model):
     )
 
 
+class CreatePaymentLogEntry(LogEntry):
+    amount = models.FloatField(blank=False, null=False)
+    payment_date = models.DateField(null=False, blank=False)
+
+    template_name = "coop/log/create_payment_log_entry.html"
+
+    def populate(
+        self,
+        actor: User,
+        share_owner: ShareOwner,
+        amount: float,
+        payment_date: datetime.date,
+    ):
+        self.amount = amount
+        self.payment_date = payment_date
+        return super().populate_base(actor=actor, share_owner=share_owner)
+
+
 class CreateShareOwnershipsLogEntry(LogEntry):
     num_shares = PositiveIntegerField(blank=False, null=False)
     start_date = models.DateField(null=False, blank=False)
@@ -422,12 +444,17 @@ class CreateShareOwnershipsLogEntry(LogEntry):
     template_name = "coop/log/create_share_ownerships_log_entry.html"
 
     def populate(
-        self, num_shares, start_date, end_date, actor, user=None, share_owner=None
+        self,
+        actor,
+        share_owner,
+        num_shares: int,
+        start_date: datetime.date,
+        end_date: datetime.date | None,
     ):
         self.num_shares = num_shares
         self.start_date = start_date
         self.end_date = end_date
-        return super().populate(actor=actor, user=user, share_owner=share_owner)
+        return super().populate_base(actor=actor, share_owner=share_owner)
 
 
 class UpdateShareOwnershipLogEntry(UpdateModelLogEntry):
@@ -437,18 +464,38 @@ class UpdateShareOwnershipLogEntry(UpdateModelLogEntry):
 
     def populate(
         self,
-        share_ownership,
-        old_frozen,
-        new_frozen,
+        share_ownership: ShareOwnership,
+        old_frozen: dict,
+        new_frozen: dict,
         actor,
-        user=None,
-        share_owner=None,
+        share_owner: ShareOwner,
     ):
         self.share_ownership_id = share_ownership.id
-        return super().populate(
+        return super().populate_base(
             old_frozen=old_frozen,
             new_frozen=new_frozen,
             actor=actor,
-            user=user,
             share_owner=share_owner,
         )
+
+
+class NewMembershipsForAccountingRecap(models.Model):
+    member = models.ForeignKey(
+        ShareOwner,
+        null=False,
+        blank=False,
+        on_delete=models.deletion.PROTECT,
+    )
+    number_of_shares = models.PositiveIntegerField(null=False, blank=False)
+    date = models.DateField(null=False, blank=False)
+
+
+class ExtraSharesForAccountingRecap(models.Model):
+    member = models.ForeignKey(
+        ShareOwner,
+        null=False,
+        blank=False,
+        on_delete=models.deletion.PROTECT,
+    )
+    number_of_shares = models.PositiveIntegerField(null=False, blank=False)
+    date = models.DateField(null=False, blank=False)

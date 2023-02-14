@@ -1,21 +1,22 @@
 {% load i18n %}
+{% load core %}
 
-<div class="card m-2" id="user_coop_info_card">
-    <h5 class="card-header d-flex justify-content-between align-items-center flex-wrap">
-        {% if owner %}
+<div class="card mb-2" id="user_coop_info_card">
+    <h5 class="card-header d-flex justify-content-between align-items-center">
+        {% if share_owner %}
             <span>
-                {% blocktranslate with coop_share_owner_id=owner.id %}
+                {% blocktranslate with coop_share_owner_id=share_owner.id %}
                     Member #{{ coop_share_owner_id }}
                 {% endblocktranslate %}
             </span>
             {% if perms.accounts.manage %}
                 <span>
-                    <a class="btn btn-sm btn-outline-secondary"
-                       href="{% url 'coop:shareowner_membership_confirmation' owner.pk %}">
-                        {% translate 'Membership confirmation' %}
+                    <a class="{% tapir_button_link %}"
+                       href="{% url 'coop:shareowner_membership_confirmation' share_owner.pk %}">
+                        <span class="material-icons">file_present</span>{% translate 'Membership confirmation' %}
                     </a>
-                    <a class="btn btn-sm btn-outline-info" href="{% url 'coop:shareowner_update' owner.pk %}" id="share_owner_edit_button">
-                        {% translate 'Edit' %}
+                    <a class="{% tapir_button_link_to_action %}" href="{% url 'coop:shareowner_update' share_owner.pk %}" id="share_owner_edit_button">
+                        <span class="material-icons">edit</span>{% translate 'Edit' %}
                     </a>
                 </span>
             {% endif %}
@@ -23,14 +24,14 @@
     </h5>
 
     <div class="card-body">
-        {% if owner %}
+        {% if share_owner %}
             <div class="row m-1">
-                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Status" %}:</div>
-                <div class="col-sm-7" id="share_owner_status">
-                    {% if owner.is_investing %}
+                <div class="col-5 fw-bold text-end">{% translate "Status" %}:</div>
+                <div class="col-7" id="share_owner_status">
+                    {% if share_owner.is_investing %}
                         <span style="color: blue;">{% translate "Investing" %}</span>
                     {% else %}
-                        {% if owner.get_active_share_ownerships.count > 0 %}
+                        {% if share_owner.get_active_share_ownerships.count > 0 %}
                             <span style="color: green;">{% translate "Active" %}</span>
                         {% else %}
                             <span style="color: red;">{% translate "Inactive" %}</span>
@@ -41,25 +42,25 @@
 
             {% if object.ratenzahlung %}
                 <div class="row m-1">
-                    <div class="col-sm-3 fw-bold text-sm-end">{% translate "Ratenzahlung" %}:</div>
-                    <div class="col-sm-9" id="share_owner_email">Yes</div>
+                    <div class="col-3 fw-bold text-end">{% translate "Ratenzahlung" %}:</div>
+                    <div class="col-9" id="share_owner_email">Yes</div>
                 </div>
             {% endif %}
 
             <div class="row m-1">
-                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Welcome Session" %}:</div>
-                <div class="col-sm-7">
-                    {% if owner.attended_welcome_session %}
+                <div class="col-5 fw-bold text-end">{% translate "Welcome Session" %}:</div>
+                <div class="col-7">
+                    {% if share_owner.attended_welcome_session %}
                         <span class="text-success">{% translate "Attended" %}</span>
                     {% else %}
                         <span class="text-warning">{% translate "Pending" %}</span>
                         {% if perms.accounts.manage %}
                             <form style="display: inline;"
                                   method="post"
-                                  action="{% url 'coop:mark_shareowner_attended_welcome_session' owner.pk %}">
+                                  action="{% url 'coop:mark_shareowner_attended_welcome_session' share_owner.pk %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-success ml-3">
-                                    {% translate "Mark Attended" %}
+                                <button type="submit" class="{% tapir_button_action %} btn-sm ml-3">
+                                    <span class="material-icons">check</span>{% translate "Mark Attended" %}
                                 </button>
                             </form>
                         {% endif %}
@@ -68,18 +69,13 @@
             </div>
 
             <div class="row m-1">
-                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Owned shares" %}:</div>
-                <div class="col-sm-7">
-                    <span id="share_owner_num_shares">{{ owner.num_shares }}</span>
-                    (<a class="" data-bs-toggle="collapse" href="#shares-table">Details</a>)
-                </div>
-            </div>
 
-            <div class="row m-1">
-                <div class="col-5 fw-bold text-end">{% translate "Payment" %}:</div>
+                <div class="col-5 fw-bold text-end">
+                    <a class="" data-bs-toggle="collapse" href="#shares-table">{% translate "Owned shares" %}:</a>
+                </div>
                 <div class="col-7">
-                    <span id="share_owner_num_shares">{{ owner.get_currently_paid_amount }} / {{ owner.get_total_expected_payment }} €</span>
-                    (<a href="{% url 'coop:incoming_payment_list'  %}">{% translate "Details" %}</a>)
+                    <span id="share_owner_num_shares">{{ share_owner.num_shares }}</span>
+
                 </div>
             </div>
 
@@ -88,13 +84,15 @@
                     <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">{% translate "Purchased" %}</th>
-                        <th scope="col">{% translate "Sold" %}</th>
-                        <th scope="col">{% translate "Status" %}</th>
-                        <th scope="col"></th>
+                        <th scope="col">Purchased</th>
+                        <th scope="col">Sold</th>
+                        <th scope="col">Status</th>
+                        {% if perms.coop.manage %}
+                            <th scope="col">{% translate 'Edit' %}</th>
+                        {% endif %}
                     </tr>
                     </thead>
-                    {% for o in owner.share_ownerships.all %}
+                    {% for o in share_owner.share_ownerships.all %}
                         <tr>
                             <td>{{ o.id }}</td>
                             <td>{{ o.start_date }}</td>
@@ -112,13 +110,13 @@
                             </td>
                             {% if perms.coop.manage %}
                                 <td>
-                                    <a class="btn tapir-btn btn-outline-secondary btn-sm"
+                                    <a class="{% tapir_button_link_to_action %} btn-sm"
                                        href="{% url 'coop:share_update' o.pk %}">
                                         <span class="material-icons">edit</span>
                                         {% translate "Edit" %}
                                     </a>
                                     <span class="dropdown">
-                                        <a class="btn tapir-btn btn-outline-secondary btn-sm dropdown-toggle" href="#"
+                                        <a class="{% tapir_button_link %} btn-sm dropdown-toggle" href="#"
                                            data-bs-toggle="dropdown">
                                             <span class="material-icons">more_horiz</span>&nbsp;
                                         </a>
@@ -152,8 +150,8 @@
                 </table>
                 {% if perms.accounts.manage %}
                     <div class="d-flex justify-content-end">
-                        <a class="ml-auto btn tapir-btn btn-outline-info" href="{% url 'coop:share_create_multiple' owner.pk %}">
-                            <span class="material-icons">add</span>
+                        <a class="ml-auto {% tapir_button_link_to_action %}" href="{% url 'coop:share_create_multiple' share_owner.pk %}">
+                            <span class="material-icons">add_circle_outline</span>
                             {% translate "Add Shares" %}
                         </a>
                     </div>
@@ -161,27 +159,36 @@
             </div>
 
             <div class="row m-1">
-                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Paid Entrance Fee" %}:</div>
-                <div class="col-sm-7">{{ owner.paid_membership_fee|yesno:"Yes,No" }}</div>
+                <div class="col-5 fw-bold text-end">
+                    <a href="{% url 'coop:incoming_payment_list'  %}?credited_member={{ share_owner.pk }}">{% translate "Payments" %}:</a>
+                </div>
+                <div class="col-7">
+                    <span >{{ share_owner.get_currently_paid_amount }} / {{ share_owner.get_total_expected_payment }} €</span>
+                </div>
             </div>
 
             <div class="row m-1">
-                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Ratenzahlung" %}:</div>
-                <div class="col-sm-7">{{ owner.ratenzahlung|yesno:"Yes,No" }}</div>
+                <div class="col-5 fw-bold text-end">{% translate "Paid Entrance Fee" %}:</div>
+                <div class="col-7">{{ share_owner.paid_membership_fee|yesno:"Yes,No" }}</div>
             </div>
 
             <div class="row m-1">
-                <div class="col-sm-5 fw-bold text-sm-end">{% translate "Willing to gift a share" %}:</div>
-                <div class="col-sm-7">{{ owner.willing_to_gift_a_share|yesno:"Yes,No" }}</div>
+                <div class="col-5 fw-bold text-end">{% translate "Ratenzahlung" %}:</div>
+                <div class="col-7">{{ share_owner.ratenzahlung|yesno:"Yes,No" }}</div>
+            </div>
+
+            <div class="row m-1">
+                <div class="col-5 fw-bold text-end">{% translate "Willing to gift a share" %}:</div>
+                <div class="col-7">{{ share_owner.willing_to_gift_a_share|yesno:"Yes,No" }}</div>
             </div>
 
             {% if perms.accounts.manage %}
                 <div class="row m-1 mt-4 justify-content-end">
                     <form class="d-flex justify-content-end" method="POST"
-                          action="{% url 'coop:send_shareowner_membership_confirmation_welcome_email' owner.pk %}">
+                          action="{% url 'coop:send_shareowner_membership_confirmation_welcome_email' share_owner.pk %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-info btn-sm">
-                            {% translate 'Send membership confirmation email' %}
+                        <button type="submit" class="{% tapir_button_action %} align-self-right">
+                            <span class="material-icons">send</span>{% translate 'Send membership confirmation email' %}
                         </button>
                     </form>
                 </div>

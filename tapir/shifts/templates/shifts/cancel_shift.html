@@ -3,12 +3,17 @@
 {% load django_bootstrap5 %}
 {% load i18n %}
 {% load static %}
+{% load core %}
+
+{% block title %}
+    {% translate "Cancel shift:" %} {{ form.instance }}
+{% endblock %}
 
 {% block content %}
     <div class="container">
         <div class="card m-2" >
             <h5 class="card-header bg-warning">
-                {% translate "Cancel shift:" %} {{ form.instance }}
+                {% translate "Cancel shift:" %} <a href="{{ form.instance.get_absolute_url }}">{{ form.instance }}</a>
             </h5>
             <div class="card-body">
                 <div>
@@ -25,7 +30,7 @@
                     {% csrf_token %}
                     {% bootstrap_form form %}
                     <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn tapir-btn btn-primary">
+                        <button type="submit" class="{% tapir_button_action %}">
                             <span class="material-icons">cancel</span>
                             {% translate 'Confirm cancellation' %}
                         </button>

@@ -1,12 +1,8 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from django.core.mail import EmailMessage
 from django.forms import DateField, IntegerField
-from django.template.loader import render_to_string
-from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
-from tapir import settings
 from tapir.coop.config import (
     COOP_SHARE_PRICE,
     COOP_MIN_SHARES,
@@ -17,11 +13,8 @@ from tapir.coop.models import (
     ShareOwnership,
     DraftUser,
     ShareOwner,
-    FinancingCampaign,
     IncomingPayment,
 )
-from tapir.coop.pdfs import get_membership_agreement_pdf
-from tapir.settings import FROM_EMAIL_MEMBER_OFFICE
 from tapir.shifts.forms import ShareOwnerChoiceField
 from tapir.utils.forms import DateInputTapir, TapirPhoneNumberField
 
@@ -135,36 +128,6 @@ class DraftUserRegisterForm(forms.ModelForm):
         for field in self.Meta.required:
             self.fields[field].required = True
 
-    def save(self, commit=True):
-        draft_user: DraftUser = super().save(commit)
-        with translation.override(draft_user.preferred_language):
-            mail = EmailMessage(
-                subject=_("Welcome at %(organisation_name)s!")
-                % {"organisation_name": settings.COOP_NAME},
-                body=render_to_string(
-                    [
-                        "coop/email/membership_application_welcome.html",
-                        "coop/email/membership_application_welcome.default.html",
-                    ],
-                    {
-                        "owner": draft_user,
-                        "contact_email_address": settings.EMAIL_ADDRESS_MEMBER_OFFICE,
-                    },
-                ),
-                from_email=FROM_EMAIL_MEMBER_OFFICE,
-                to=[draft_user.email],
-                attachments=[
-                    (
-                        "Beteiligungserklärung %s.pdf" % draft_user.get_display_name(),
-                        get_membership_agreement_pdf(draft_user).write_pdf(),
-                        "application/pdf",
-                    )
-                ],
-            )
-            mail.content_subtype = "html"
-            mail.send()
-        return draft_user
-
     class Meta:
         model = DraftUser
         fields = [
@@ -179,8 +142,6 @@ class DraftUserRegisterForm(forms.ModelForm):
             "city",
             "country",
             "preferred_language",
-            "num_shares",
-            "is_investing",
         ]
         required = [
             "first_name",
@@ -193,7 +154,6 @@ class DraftUserRegisterForm(forms.ModelForm):
             "city",
             "country",
             "preferred_language",
-            "num_shares",
         ]
         widgets = {"birthdate": DateInputTapir()}
 
@@ -215,9 +175,6 @@ class ShareOwnerForm(forms.ModelForm):
             "city",
             "preferred_language",
             "is_investing",
-            "signed_sepa_mandate",
-            "sepa_account_holder",
-            "sepa_iban",
             "ratenzahlung",
             "attended_welcome_session",
             "paid_membership_fee",
@@ -247,29 +204,6 @@ class ShareOwnerForm(forms.ModelForm):
                 "phone_number",
             ]:
                 del self.fields[f]
-
-
-class FinancingCampaignForm(forms.ModelForm):
-    class Meta:
-        model = FinancingCampaign
-        fields = [
-            "name",
-            "is_active",
-            "goal",
-        ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for source in self.instance.sources.all():
-            self.fields[f"financing_source_{source.id}"] = forms.IntegerField(
-                required=True, label=_(source.name), initial=source.raised_amount
-            )
-
-    def save(self, commit=True):
-        for source in self.instance.sources.all():
-            source.raised_amount = self.cleaned_data[f"financing_source_{source.id}"]
-            source.save()
-        return super().save(commit=commit)
 
 
 class IncomingPaymentForm(forms.ModelForm):

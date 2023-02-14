@@ -3,11 +3,7 @@
 {% load django_bootstrap5 %}
 {% load i18n %}
 {% load static %}
-
-{% block head %}
-    {{ block.super }}
-    <script src="{% static 'coop/js/draftuser_form.js' %}"></script>
-{% endblock %}
+{% load core %}
 
 {% block content %}
 
@@ -29,54 +25,27 @@
     {% endif %}
 
     <div class="container">
-        <div class="card m-2">
+        <div class="card mb-2">
             <h5 class="card-header d-flex justify-content-between align-items-center">
                 {% if request.user.is_authenticated %}
-                    {% translate "Create applicant" %}
+                {% translate "Create applicant" %}
                 {% else %}
-                    {% translate "Register" %}
+                {% translate "Register" %}
                 {% endif %}
             </h5>
             <div class="card-body">
-                {% blocktranslate %}
-                    <p>Welcome to WirMarkt!</p>
-                    <p>By filling this form, you're registering as a potential member of our cooperative <em>WirMarkt
-                        Supermarkt Hamburg eG i.G.</em>. Thanks a lot for your interest!</p>
-                    <p>Once you've submitted the form, we'll mail you a membership agreement PDF. Please print it, sign
-                        it and send it back via post.</p>
-                    <p>If you want more information or need help, please visit our <a href="https://wirmarkt.de/">website</a>,
-                        or <a href="mailto:office@wirmarkt.de">send us an email</a>.</p>
-                {% endblocktranslate %}
+                <p>Welcome to SuperCoop Berlin!</p>
+                <p>By filling this form, you're registering as a potential member of SuperCoop. That's a great idea!</p>
+                <p>Once it's done we'll then help you fill and send the documents to make the registration official.</p>
+                <p>If you want more information, you can visit the <a href="https://supercoop.de/">website</a>, the <a href="https://wiki.supercoop.de/wiki/Main_Page">wiki</a>, or <a href="mailto: contact@supercoop.de">write us an email</a>.</p>
                 <form role="form" method="post">
                     {% csrf_token %}
                     {% bootstrap_form form %}
-                    <div class="d-flex mb-5">
-                        <button type="submit" class="btn tapir-btn btn-primary">
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="{% tapir_button_action %}">
                             <span class="material-icons">save</span>
                             {% translate 'Save' %}
                         </button>
-                    </div>
-                    <div class="text-muted" style="font-size: .875em">
-                        <h6>Datenschutzerklärung</h6>
-                        <p>
-                            Verantwortlich für die Datenverarbeitung ist die <em>WirMarkt Supermarkt Hamburg eG
-                            i.G., c/o Impact Hub Hamburg, Schomburgstr. 50, 22767 Hamburg</em>. Erreichbar unter <a
-                                href="mailto:office@wirmarkt.de">office@wirmarkt.de</a>. Der Name, die Anschrift und das
-                            Geburtsdatum werden dazu verwendet, um die Beteiligungserklärung für die potenzielle
-                            Mitgliedschaft vorzubereiten (Art. 6 Absatz 1 c DS-GVO i.V.m. § 30 Absatz 2 Satz 1 Nr.1
-                            GenG). Über die Adresse oder die E-Mail-Adresse wird Ihnen von der Genossenschaft die
-                            Beteiligungserklärung zugesendet. Außerdem verwenden wir Ihre E-Mail-Adresse, um Ihnen bei
-                            der Einreichung und dem Ausfüllen der Unterlagen zu unterstützen und etwaige Fragen zur
-                            Genossenschaft zu beantworten.
-                        </p>
-                        <p>
-                            Die personenbezogenen Daten werden nicht an Dritte weitergeleitet, soweit nicht im
-                            Einzelfall dafür eine Einwilligung erteilt wird.
-                        </p>
-                        <p> Die personenbezogenen Daten werden wieder gelöscht, sofern Sie nicht innerhalb eines
-                            halben Jahres Mitglied der Genossenschaft geworden sind. Oder auf Ihren expliziten Wunsch,
-                            den Sie per E-Mail oder Post an die oben genannte Adresse formulieren können.
-                        </p>
                     </div>
                 </form>
             </div>

@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import email.utils
 import os
 from datetime import timedelta
-from decimal import Decimal
 from pathlib import Path
 
 import celery.schedules
@@ -37,7 +36,7 @@ DEBUG = env("DEBUG", cast=bool, default=False)
 ALLOWED_HOSTS = env("ALLOWED_HOSTS", cast=list, default=["*"])
 
 ENABLE_SILK_PROFILING = False
-ENABLE_API = env("ENABLE_API", cast=bool, default=True)
+ENABLE_API = env("ENABLE_API", cast=bool, default=False)
 
 # Application definition
 INSTALLED_APPS = [
@@ -56,12 +55,11 @@ INSTALLED_APPS = [
     "tapir.shifts",
     "tapir.utils",
     "tapir.coop",
-    "tapir.odoo",
+    "tapir.welcomedesk",
     "django_tables2",
     "django_filters",
     "django_select2",  # For autocompletion in form fields
     "phonenumber_field",
-    # TODO(Leon Handreke): Don't install in prod
     "django_extensions",
     "chartjs",
 ]
@@ -83,7 +81,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "tapir.accounts.middleware.ClientPermsMiddleware",
+    "tapir.welcomedesk.middleware.WelcomeDeskPermsMiddleware",
     "tapir.accounts.models.language_middleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -130,7 +128,7 @@ WSGI_APPLICATION = "tapir.wsgi.application"
 DATABASES = {
     "default": env.db(default="postgresql://tapir:tapir@db:5432/tapir"),
     "ldap": env.db_url(
-        "LDAP_URL", default="ldap://cn=admin,dc=wirmarkt,dc=de:admin@openldap"
+        "LDAP_URL", default="ldap://cn=admin,dc=supercoop,dc=de:admin@openldap"
     ),
 }
 
@@ -148,6 +146,14 @@ CELERY_BEAT_SCHEDULE = {
     "apply_shift_cycle_start": {
         "task": "tapir.shifts.tasks.apply_shift_cycle_start",
         "schedule": celery.schedules.crontab(hour="*/2", minute=20),
+    },
+    "send_accounting_recap": {
+        "task": "tapir.coop.tasks.send_accounting_recap",
+        "schedule": celery.schedules.crontab(hour=12, minute=0, day_of_week="sunday"),
+    },
+    "generate_shifts": {
+        "task": "tapir.shifts.tasks.generate_shifts",
+        "schedule": celery.schedules.crontab(minute=0, hour=0),
     },
 }
 
@@ -182,25 +188,28 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
+EMAIL_ADDRESS_MEMBER_OFFICE = "mitglied@supercoop.de"
+EMAIL_ADDRESS_ACCOUNTING = "accounting@supercoop.de"
+EMAIL_ADDRESS_MANAGEMENT = "contact@supercoop.de"
+EMAIL_ADDRESS_SUPERVISORS = "aufsichtsrat@supercoop.de"
 
 # django-environ EMAIL_URL mechanism is a bit hairy with passwords with slashes in them, so use this instead
 EMAIL_ENV = env("EMAIL_ENV", default="dev")
-if EMAIL_ENV == "dev":
+if EMAIL_ENV == "dev" or EMAIL_ENV == "test":
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-elif EMAIL_ENV == "test":
-    # Local SMTP
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 elif EMAIL_ENV == "prod":
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = env("EMAIL_HOST", default="smtp-relay.gmail.com")
-    EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="office@wirmarkt.de")
+    EMAIL_HOST_USER = env("EMAIL_HOST_USER", default=EMAIL_ADDRESS_MEMBER_OFFICE)
     EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
 
-EMAIL_ADDRESS_MEMBER_OFFICE = "office@wirmarkt.de"
-EMAIL_ADDRESS_ACCOUNTING = "office@wirmarkt.de"
-COOP_NAME = "WirMarkt Hamburg"
+
+COOP_NAME = "SuperCoop Berlin"
+COOP_FULL_NAME = "SuperCoop Berlin eG"
+COOP_STREET = "Oudenarder Straße 16"
+COOP_PLACE = "13347 Berlin"
 FROM_EMAIL_MEMBER_OFFICE = f"{COOP_NAME} Mitgliederbüro <{EMAIL_ADDRESS_MEMBER_OFFICE}>"
 DEFAULT_FROM_EMAIL = FROM_EMAIL_MEMBER_OFFICE
 
@@ -209,7 +218,7 @@ DEFAULT_FROM_EMAIL = FROM_EMAIL_MEMBER_OFFICE
 ADMINS = tuple(email.utils.parseaddr(x) for x in env.list("DJANGO_ADMINS", default=[]))
 # Crash emails will come from this address.
 # NOTE(Leon Handreke): I don't know if our Google SMTP will reject other senders, so play it safe.
-SERVER_EMAIL = env("SERVER_EMAIL", default="office@wirmarkt.de")
+SERVER_EMAIL = env("SERVER_EMAIL", default=EMAIL_ADDRESS_MEMBER_OFFICE)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
@@ -223,40 +232,42 @@ SELECT2_I18N_PATH = "core/select2/4.0.13/js/i18n"
 
 WEASYPRINT_BASEURL = "/"
 
-REG_PERSON_BASE_DN = "ou=people,dc=wirmarkt,dc=de"
+REG_PERSON_BASE_DN = "ou=people,dc=supercoop,dc=de"
 REG_PERSON_OBJECT_CLASSES = ["inetOrgPerson", "organizationalPerson", "person"]
-REG_GROUP_BASE_DN = "ou=groups,dc=wirmarkt,dc=de"
+REG_GROUP_BASE_DN = "ou=groups,dc=supercoop,dc=de"
 REG_GROUP_OBJECT_CLASSES = ["groupOfNames"]
+
+PERMISSION_SHIFTS_MANAGE = "shifts.manage"
+PERMISSION_COOP_VIEW = "coop.view"
+PERMISSION_COOP_MANAGE = "coop.manage"
+PERMISSION_COOP_ADMIN = "coop.admin"
+PERMISSION_ACCOUNTS_MANAGE = "accounts.manage"
+PERMISSION_WELCOMEDESK_VIEW = "welcomedesk.view"
 
 # Groups are stored in the LDAP tree
 GROUP_VORSTAND = "vorstand"
 GROUP_MEMBER_OFFICE = "member-office"
-# This is our own little stupid permission system. See explanation in accounts/models.py.
 PERMISSIONS = {
-    "shifts.manage": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    "coop.view": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    "coop.manage": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    # TODO(Leon Handreke): Reserve this to a list of knowledgeable superusers
-    "coop.admin": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    "accounts.view": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    "accounts.manage": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
-    "welcomedesk.view": [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
+    PERMISSION_SHIFTS_MANAGE: [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
+    PERMISSION_COOP_VIEW: [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
+    PERMISSION_COOP_MANAGE: [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
+    PERMISSION_COOP_ADMIN: [GROUP_VORSTAND],
+    PERMISSION_ACCOUNTS_MANAGE: [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
+    PERMISSION_WELCOMEDESK_VIEW: [GROUP_VORSTAND, GROUP_MEMBER_OFFICE],
 }
 
 # Permissions granted to client presenting a given SSL client cert. Currently used for the welcome desk machines.
-LDAP_WELCOME_DESK_ID = (
-    "CN=welcome-desk.members.wirmarkt.de,O=WirMarkt Supermarkt Hamburg eG,C=DE"
-)
+LDAP_WELCOME_DESK_ID = "CN=welcome-desk.members.supercoop.de,O=SuperCoop Berlin eG,C=DE"
 CLIENT_PERMISSIONS = {
     LDAP_WELCOME_DESK_ID: [
-        "welcomedesk.view",
+        PERMISSION_WELCOMEDESK_VIEW,
     ]
 }
 
 AUTH_USER_MODEL = "accounts.TapirUser"
 LOGIN_REDIRECT_URL = "accounts:user_me"
 
-SITE_URL = env("SITE_URL", default="http://localhost:8000")
+SITE_URL = env("SITE_URL", default="http://127.0.0.1:8000")
 
 PHONENUMBER_DEFAULT_REGION = "DE"
 
@@ -264,8 +275,8 @@ LOCALE_PATHS = [os.path.join(BASE_DIR, "tapir/translations/locale")]
 
 if ENABLE_SILK_PROFILING:
     SILKY_PYTHON_PROFILER = True
-    SILKY_PYTHON_PROFILER_BINARY = True
     SILKY_META = True
+    SILKY_PROFILE_DIR = "silk_profiling"
 
 if ENABLE_API:
     REST_FRAMEWORK = {

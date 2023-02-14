@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.db import transaction
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import (
@@ -7,6 +8,11 @@ from django.views.generic import (
     ListView,
 )
 
+from tapir.accounts.models import TapirUser
+from tapir.core.views import TapirFormMixin
+from tapir.log.util import freeze_for_log
+from tapir.log.views import UpdateViewLogMixin
+from tapir.settings import PERMISSION_SHIFTS_MANAGE
 from tapir.shifts.forms import (
     ShiftExemptionForm,
 )
@@ -15,13 +21,15 @@ from tapir.shifts.models import (
     ShiftAttendanceTemplate,
     ShiftUserData,
     ShiftExemption,
+    CreateExemptionLogEntry,
+    UpdateExemptionLogEntry,
 )
 
 
-class CreateShiftExemptionView(PermissionRequiredMixin, CreateView):
+class CreateShiftExemptionView(PermissionRequiredMixin, TapirFormMixin, CreateView):
     model = ShiftExemption
     form_class = ShiftExemptionForm
-    permission_required = "shifts.manage"
+    permission_required = PERMISSION_SHIFTS_MANAGE
 
     def get_target_user_data(self) -> ShiftUserData:
         return ShiftUserData.objects.get(pk=self.kwargs["shift_user_data_pk"])
@@ -33,8 +41,20 @@ class CreateShiftExemptionView(PermissionRequiredMixin, CreateView):
         return super().get_form_kwargs(*args, **kwargs)
 
     def form_valid(self, form):
-        exemption: ShiftExemption = form.instance
-        user = self.get_target_user_data().user
+        with transaction.atomic():
+            exemption: ShiftExemption = form.instance
+            self.cancel_attendances_covered_by_exemption(exemption)
+            CreateExemptionLogEntry().populate(
+                start_date=exemption.start_date,
+                end_date=exemption.end_date,
+                actor=self.request.user,
+                tapir_user=exemption.shift_user_data.user,
+            ).save()
+            return super().form_valid(form)
+
+    @staticmethod
+    def cancel_attendances_covered_by_exemption(exemption: ShiftExemption):
+        user = exemption.shift_user_data.user
         for attendance in ShiftExemption.get_attendances_cancelled_by_exemption(
             user=user,
             start_date=exemption.start_date,
@@ -51,23 +71,65 @@ class CreateShiftExemptionView(PermissionRequiredMixin, CreateView):
         ):
             ShiftAttendanceTemplate.objects.filter(user=user).delete()
 
-        return super().form_valid(form)
-
     def get_success_url(self):
         return self.get_target_user_data().user.get_absolute_url()
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tapir_user = self.get_target_user_data().user
+        context["page_title"] = _("Shift exemption: %(name)s") % {
+            "name": tapir_user.get_display_name()
+        }
+        context["card_title"] = _("Create shift exemption for: %(link)s") % {
+            "link": tapir_user.get_html_link()
+        }
+        return context
 
-class EditShiftExemptionView(PermissionRequiredMixin, UpdateView):
+
+class EditShiftExemptionView(
+    PermissionRequiredMixin, TapirFormMixin, UpdateViewLogMixin, UpdateView
+):
     model = ShiftExemption
     form_class = ShiftExemptionForm
-    permission_required = "shifts.manage"
+    permission_required = PERMISSION_SHIFTS_MANAGE
 
     def get_success_url(self):
         return reverse("shifts:shift_exemption_list")
 
+    def form_valid(self, form):
+        with transaction.atomic():
+            response = super().form_valid(form)
+
+            exemption: ShiftExemption = form.instance
+            CreateShiftExemptionView.cancel_attendances_covered_by_exemption(exemption)
+
+            new_frozen = freeze_for_log(form.instance)
+            if self.old_object_frozen != new_frozen:
+                UpdateExemptionLogEntry().populate(
+                    old_frozen=self.old_object_frozen,
+                    new_frozen=new_frozen,
+                    tapir_user=ShiftUserData.objects.get(
+                        shift_exemptions=self.kwargs["pk"]
+                    ).user,
+                    actor=self.request.user,
+                ).save()
+
+            return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tapir_user: TapirUser = self.object.shift_user_data.user
+        context["page_title"] = _("Shift exemption: %(name)s") % {
+            "name": tapir_user.get_display_name()
+        }
+        context["card_title"] = _("Edit shift exemption for: %(link)s") % {
+            "link": tapir_user.get_html_link()
+        }
+        return context
+
 
 class ShiftExemptionListView(PermissionRequiredMixin, ListView):
-    permission_required = ["shifts.manage"]
+    permission_required = [PERMISSION_SHIFTS_MANAGE]
     model = ShiftExemption
 
     def get_queryset(self):

@@ -5,13 +5,21 @@ from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.datetime_safe import date
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST, require_GET
 
 from tapir.coop import pdfs
 from tapir.coop.config import COOP_SHARE_PRICE
+from tapir.coop.emails.membership_confirmation_email_for_active_member import (
+    MembershipConfirmationForActiveMemberEmail,
+)
+from tapir.coop.emails.membership_confirmation_email_for_investing_member import (
+    MembershipConfirmationForInvestingMemberEmail,
+)
 from tapir.coop.forms import (
     DraftUserForm,
     DraftUserRegisterForm,
@@ -20,27 +28,35 @@ from tapir.coop.models import (
     DraftUser,
     ShareOwner,
     ShareOwnership,
+    NewMembershipsForAccountingRecap,
 )
+from tapir.coop.pdfs import CONTENT_TYPE_PDF
+from tapir.core.views import TapirFormMixin
+from tapir.settings import PERMISSION_COOP_MANAGE
 from tapir.utils.models import copy_user_info
+from tapir.utils.shortcuts import set_header_for_file_download
 
 
-class DraftUserViewMixin:
+class DraftUserListView(PermissionRequiredMixin, generic.ListView):
+    permission_required = PERMISSION_COOP_MANAGE
     model = DraftUser
-    form_class = DraftUserForm
     ordering = ["created_at"]
 
 
-class DraftUserListView(PermissionRequiredMixin, DraftUserViewMixin, generic.ListView):
-    permission_required = "coop.manage"
+class DraftUserCreateView(PermissionRequiredMixin, TapirFormMixin, generic.CreateView):
+    permission_required = PERMISSION_COOP_MANAGE
+    model = DraftUser
+    form_class = DraftUserForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context["page_title"] = _("Create applicant")
+        context["card_title"] = _("Create applicant")
+        return context
 
 
-class DraftUserCreateView(
-    PermissionRequiredMixin, DraftUserViewMixin, generic.CreateView
-):
-    permission_required = "coop.manage"
-
-
-class DraftUserRegisterView(DraftUserViewMixin, generic.CreateView):
+class DraftUserRegisterView(generic.CreateView):
+    model = DraftUser
     form_class = DraftUserRegisterForm
     success_url = reverse_lazy("coop:draftuser_confirm_registration")
 
@@ -51,31 +67,40 @@ class DraftUserRegisterView(DraftUserViewMixin, generic.CreateView):
         ]
 
 
-class DraftUserConfirmRegistrationView(DraftUserViewMixin, generic.TemplateView):
+class DraftUserConfirmRegistrationView(generic.TemplateView):
     template_name = "coop/draftuser_confirm_registration.html"
 
 
-class DraftUserUpdateView(
-    PermissionRequiredMixin, DraftUserViewMixin, generic.UpdateView
-):
-    permission_required = "coop.manage"
+class DraftUserUpdateView(PermissionRequiredMixin, TapirFormMixin, generic.UpdateView):
+    permission_required = PERMISSION_COOP_MANAGE
+    model = DraftUser
+    form_class = DraftUserForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        draft_user: DraftUser = self.object
+        context["page_title"] = _("Edit applicant: %(name)s") % {
+            "name": draft_user.get_display_name()
+        }
+        context["card_title"] = _("Edit applicant: %(name)s") % {
+            "name": draft_user.get_html_link()
+        }
+        return context
 
 
-class DraftUserDetailView(
-    PermissionRequiredMixin, DraftUserViewMixin, generic.DetailView
-):
-    permission_required = "coop.manage"
+class DraftUserDetailView(PermissionRequiredMixin, generic.DetailView):
+    permission_required = PERMISSION_COOP_MANAGE
+    model = DraftUser
 
 
-class DraftUserDeleteView(
-    PermissionRequiredMixin, DraftUserViewMixin, generic.DeleteView
-):
-    permission_required = "coop.manage"
+class DraftUserDeleteView(PermissionRequiredMixin, generic.DeleteView):
+    permission_required = PERMISSION_COOP_MANAGE
     success_url = reverse_lazy("coop:draftuser_list")
+    model = DraftUser
 
 
 @require_GET
-@permission_required("coop.manage")
+@permission_required(PERMISSION_COOP_MANAGE)
 def draftuser_membership_agreement(request, pk):
     draft_user = get_object_or_404(DraftUser, pk=pk)
     filename = "Beteiligungserklärung %s %s.pdf" % (
@@ -83,37 +108,37 @@ def draftuser_membership_agreement(request, pk):
         draft_user.last_name,
     )
 
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = 'filename="{}"'.format(filename)
+    response = HttpResponse(content_type=CONTENT_TYPE_PDF)
+    set_header_for_file_download(response, filename)
     response.write(pdfs.get_membership_agreement_pdf(draft_user).write_pdf())
     return response
 
 
 @require_POST
 @csrf_protect
-@permission_required("coop.manage")
+@permission_required(PERMISSION_COOP_MANAGE)
 def mark_signed_membership_agreement(request, pk):
-    u = DraftUser.objects.get(pk=pk)
-    u.signed_membership_agreement = True
-    u.save()
+    user = DraftUser.objects.get(pk=pk)
+    user.signed_membership_agreement = True
+    user.save()
 
-    return redirect(u)
+    return redirect(user)
 
 
 @require_POST
 @csrf_protect
-@permission_required("coop.manage")
+@permission_required(PERMISSION_COOP_MANAGE)
 def mark_attended_welcome_session(request, pk):
-    u = DraftUser.objects.get(pk=pk)
-    u.attended_welcome_session = True
-    u.save()
+    user = DraftUser.objects.get(pk=pk)
+    user.attended_welcome_session = True
+    user.save()
 
-    return redirect(u)
+    return redirect(user)
 
 
 @require_POST
 @csrf_protect
-@permission_required("coop.manage")
+@permission_required(PERMISSION_COOP_MANAGE)
 def register_draftuser_payment(request, pk):
     draft = get_object_or_404(DraftUser, pk=pk)
     draft.paid_membership_fee = True
@@ -123,25 +148,31 @@ def register_draftuser_payment(request, pk):
 
 @require_POST
 @csrf_protect
-@permission_required("coop.manage")
+@permission_required(PERMISSION_COOP_MANAGE)
 def create_share_owner_from_draft_user_view(request, pk):
-    # For now, we don't create users for our new members yet but only ShareOwners. Later, this will be used for
-    # investing members
+    draft_user = DraftUser.objects.get(pk=pk)
 
-    draft = DraftUser.objects.get(pk=pk)
-    if not draft.signed_membership_agreement:
+    if not draft_user.can_create_user():
         raise ValidationError(
-            "Members can only be created after they have signed the membership agreement."
-        )
-
-    if draft.num_shares <= 0:
-        raise ValidationError(
-            "Trying to create a share owner from a draft user without shares"
+            "DraftUser is not ready (could be missing information or invalid amount of shares)"
         )
 
     with transaction.atomic():
-        share_owner = create_share_owner_and_shares_from_draft_user(draft)
-        draft.delete()
+        share_owner = create_share_owner_and_shares_from_draft_user(draft_user)
+        draft_user.delete()
+
+        NewMembershipsForAccountingRecap.objects.create(
+            member=share_owner,
+            number_of_shares=share_owner.get_active_share_ownerships().count(),
+            date=timezone.now().date(),
+        )
+
+        email = (
+            MembershipConfirmationForInvestingMemberEmail
+            if share_owner.is_investing
+            else MembershipConfirmationForActiveMemberEmail
+        )(share_owner=share_owner)
+        email.send_to_share_owner(actor=request.user, recipient=share_owner)
 
     return redirect(share_owner.get_absolute_url())
 
@@ -160,7 +191,7 @@ def create_share_owner_and_shares_from_draft_user(draft_user: DraftUser) -> Shar
 
     for _ in range(0, draft_user.num_shares):
         ShareOwnership.objects.create(
-            owner=share_owner,
+            share_owner=share_owner,
             start_date=date.today(),
             amount_paid=(COOP_SHARE_PRICE if draft_user.paid_shares else 0),
         )

@@ -1,17 +1,16 @@
 import csv
+import datetime
 
 import django_filters
 import django_tables2
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.core.mail import EmailMessage
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
-from django.template.loader import render_to_string
-from django.urls import reverse
-from django.utils import translation
+from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _, pgettext_lazy
 from django.views import generic
@@ -26,7 +25,17 @@ from django_tables2.export import ExportMixin
 from tapir import settings
 from tapir.accounts.models import TapirUser
 from tapir.coop import pdfs
-from tapir.coop.config import COOP_SHARE_PRICE
+from tapir.coop.config import COOP_SHARE_PRICE, on_welcome_session_attendance_update
+from tapir.coop.emails.extra_shares_confirmation_email import (
+    ExtraSharesConfirmationEmail,
+)
+from tapir.coop.emails.membership_confirmation_email_for_active_member import (
+    MembershipConfirmationForActiveMemberEmail,
+)
+from tapir.coop.emails.membership_confirmation_email_for_investing_member import (
+    MembershipConfirmationForInvestingMemberEmail,
+)
+from tapir.coop.emails.tapir_account_created_email import TapirAccountCreatedEmail
 from tapir.coop.forms import (
     ShareOwnershipForm,
     ShareOwnerForm,
@@ -42,18 +51,25 @@ from tapir.coop.models import (
     get_member_status_translation,
     CreateShareOwnershipsLogEntry,
     UpdateShareOwnershipLogEntry,
+    ExtraSharesForAccountingRecap,
 )
-from tapir.log.models import EmailLogEntry, LogEntry
+from tapir.coop.pdfs import CONTENT_TYPE_PDF
+from tapir.core.config import TAPIR_TABLE_CLASSES, TAPIR_TABLE_TEMPLATE
+from tapir.core.views import TapirFormMixin
+from tapir.log.models import LogEntry
 from tapir.log.util import freeze_for_log
 from tapir.log.views import UpdateViewLogMixin
-from tapir.settings import FROM_EMAIL_MEMBER_OFFICE
+from tapir.settings import (
+    PERMISSION_COOP_MANAGE,
+    PERMISSION_COOP_ADMIN,
+    PERMISSION_ACCOUNTS_MANAGE,
+)
 from tapir.shifts.models import (
     ShiftUserData,
     SHIFT_USER_CAPABILITY_CHOICES,
-    ShiftAttendanceTemplate,
-    ShiftAttendanceMode,
 )
 from tapir.utils.models import copy_user_info
+from tapir.utils.shortcuts import set_header_for_file_download, get_html_link
 
 
 class ShareOwnershipViewMixin:
@@ -62,13 +78,17 @@ class ShareOwnershipViewMixin:
 
     def get_success_url(self):
         # After successful creation or update of a ShareOwnership, return to the user overview page.
-        return self.object.owner.get_absolute_url()
+        return self.object.share_owner.get_absolute_url()
 
 
 class ShareOwnershipUpdateView(
-    PermissionRequiredMixin, UpdateViewLogMixin, ShareOwnershipViewMixin, UpdateView
+    PermissionRequiredMixin,
+    UpdateViewLogMixin,
+    ShareOwnershipViewMixin,
+    TapirFormMixin,
+    UpdateView,
 ):
-    permission_required = "coop.manage"
+    permission_required = PERMISSION_COOP_MANAGE
 
     def form_valid(self, form):
         with transaction.atomic():
@@ -76,53 +96,79 @@ class ShareOwnershipUpdateView(
 
             new_frozen = freeze_for_log(form.instance)
             if self.old_object_frozen != new_frozen:
-                log_entry = UpdateShareOwnershipLogEntry().populate(
+                UpdateShareOwnershipLogEntry().populate(
                     share_ownership=form.instance,
                     old_frozen=self.old_object_frozen,
                     new_frozen=new_frozen,
-                    share_owner=form.instance.owner,
                     actor=self.request.user,
-                )
-                log_entry.save()
+                    share_owner=form.instance.share_owner,
+                ).save()
 
             return response
 
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        share_ownership: ShareOwnership = self.object
+        context_data["page_title"] = _("Edit share: %(name)s") % {
+            "name": share_ownership.share_owner.get_info().get_display_name()
+        }
+        context_data["card_title"] = _("Edit share: %(name)s") % {
+            "name": share_ownership.share_owner.get_info().get_html_link()
+        }
+        return context_data
 
-class ShareOwnershipCreateMultipleView(PermissionRequiredMixin, FormView):
+
+class ShareOwnershipCreateMultipleView(
+    PermissionRequiredMixin, TapirFormMixin, FormView
+):
     form_class = ShareOwnershipCreateMultipleForm
-    permission_required = "coop.manage"
-    template_name = "core/generic_form.html"
+    permission_required = PERMISSION_COOP_MANAGE
 
     def get_share_owner(self) -> ShareOwner:
         return get_object_or_404(ShareOwner, pk=self.kwargs["shareowner_pk"])
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
-        context_data["card_title"] = _(f"Add shares to %(name)s") % {
-            "name": self.get_share_owner().get_info().get_display_name()
+        share_owner = self.get_share_owner()
+        context_data["page_title"] = _("Add shares to %(name)s") % {
+            "name": share_owner.get_info().get_display_name()
+        }
+        context_data["card_title"] = _("Add shares to %(name)s") % {
+            "name": share_owner.get_info().get_html_link()
         }
         return context_data
 
     def form_valid(self, form):
         share_owner = self.get_share_owner()
+        num_shares = form.cleaned_data["num_shares"]
 
         with transaction.atomic():
             CreateShareOwnershipsLogEntry().populate(
-                num_shares=form.cleaned_data["num_shares"],
+                actor=self.request.user,
+                share_owner=share_owner,
+                num_shares=num_shares,
                 start_date=form.cleaned_data["start_date"],
                 end_date=form.cleaned_data["end_date"],
-                actor=self.request.user,
-                user=share_owner.user,
-                share_owner=share_owner,
             ).save()
 
             for _ in range(form.cleaned_data["num_shares"]):
                 ShareOwnership.objects.create(
-                    owner=share_owner,
+                    share_owner=share_owner,
                     amount_paid=0,
                     start_date=form.cleaned_data["start_date"],
                     end_date=form.cleaned_data["end_date"],
                 )
+
+            ExtraSharesForAccountingRecap.objects.create(
+                member=share_owner,
+                number_of_shares=num_shares,
+                date=timezone.now().date(),
+            )
+
+        email = ExtraSharesConfirmationEmail(
+            num_shares=form.cleaned_data["num_shares"], share_owner=share_owner
+        )
+        email.send_to_share_owner(actor=self.request.user, recipient=share_owner)
 
         return super().form_valid(form)
 
@@ -133,23 +179,25 @@ class ShareOwnershipCreateMultipleView(PermissionRequiredMixin, FormView):
 @require_POST
 @csrf_protect
 # Higher permission requirement since this is a destructive operation only to correct mistakes
-@permission_required("coop.admin")
+@permission_required(PERMISSION_COOP_ADMIN)
 def share_ownership_delete(request, pk):
     share_ownership = get_object_or_404(ShareOwnership, pk=pk)
-    owner = share_ownership.owner
+    share_owner = share_ownership.share_owner
 
     with transaction.atomic():
         DeleteShareOwnershipLogEntry().populate(
-            share_owner=share_ownership.owner, actor=request.user, model=share_ownership
+            share_owner=share_ownership.share_owner,
+            actor=request.user,
+            model=share_ownership,
         ).save()
         share_ownership.delete()
 
-    return redirect(owner)
+    return redirect(share_owner)
 
 
 class ShareOwnerDetailView(PermissionRequiredMixin, generic.DetailView):
     model = ShareOwner
-    permission_required = "coop.manage"
+    permission_required = PERMISSION_COOP_MANAGE
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -159,9 +207,9 @@ class ShareOwnerDetailView(PermissionRequiredMixin, generic.DetailView):
 
 
 class ShareOwnerUpdateView(
-    PermissionRequiredMixin, UpdateViewLogMixin, generic.UpdateView
+    PermissionRequiredMixin, UpdateViewLogMixin, TapirFormMixin, generic.UpdateView
 ):
-    permission_required = "accounts.manage"
+    permission_required = PERMISSION_ACCOUNTS_MANAGE
     model = ShareOwner
     form_class = ShareOwnerForm
 
@@ -169,47 +217,63 @@ class ShareOwnerUpdateView(
         with transaction.atomic():
             response = super().form_valid(form)
 
+            for callback in on_welcome_session_attendance_update:
+                callback(form.instance)
+
             new_frozen = freeze_for_log(form.instance)
             if self.old_object_frozen != new_frozen:
-                log_entry = UpdateShareOwnerLogEntry().populate(
+                UpdateShareOwnerLogEntry().populate(
                     old_frozen=self.old_object_frozen,
                     new_frozen=new_frozen,
                     share_owner=form.instance,
                     actor=self.request.user,
-                )
-                log_entry.save()
+                ).save()
 
             return response
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        share_owner: ShareOwner = self.object
+        context["page_title"] = _("Edit member: %(name)s") % {
+            "name": share_owner.get_display_name()
+        }
+        context["card_title"] = _("Edit member: %(name)s") % {
+            "name": share_owner.get_html_link()
+        }
+        return context
+
 
 @require_GET
-@permission_required("coop.manage")
+@permission_required(PERMISSION_COOP_MANAGE)
 def empty_membership_agreement(request):
     filename = "Beteiligungserklärung " + settings.COOP_NAME + ".pdf"
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
+    response = HttpResponse(content_type=CONTENT_TYPE_PDF)
+    set_header_for_file_download(response, filename)
     response.write(pdfs.get_membership_agreement_pdf().write_pdf())
     return response
 
 
 @require_POST
 @csrf_protect
-@permission_required("coop.manage")
+@permission_required(PERMISSION_COOP_MANAGE)
 def mark_shareowner_attended_welcome_session(request, pk):
     share_owner = get_object_or_404(ShareOwner, pk=pk)
-    old_share_owner_dict = freeze_for_log(share_owner)
+    old_frozen = freeze_for_log(share_owner)
 
     with transaction.atomic():
         share_owner.attended_welcome_session = True
         share_owner.save()
 
-        log_entry = UpdateShareOwnerLogEntry().populate(
-            old_frozen=old_share_owner_dict,
-            new_model=share_owner,
+        for callback in on_welcome_session_attendance_update:
+            callback(share_owner)
+
+        new_frozen = freeze_for_log(share_owner)
+        UpdateShareOwnerLogEntry().populate(
+            old_frozen=old_frozen,
+            new_frozen=new_frozen,
             share_owner=share_owner,
             actor=request.user,
-        )
-        log_entry.save()
+        ).save()
 
     return redirect(share_owner.get_absolute_url())
 
@@ -217,126 +281,137 @@ def mark_shareowner_attended_welcome_session(request, pk):
 class CreateUserFromShareOwnerView(PermissionRequiredMixin, generic.CreateView):
     model = TapirUser
     template_name = "coop/create_user_from_shareowner_form.html"
-    permission_required = "coop.manage"
+    permission_required = PERMISSION_COOP_MANAGE
     fields = ["first_name", "last_name", "username"]
 
     def get_shareowner(self):
         return get_object_or_404(ShareOwner, pk=self.kwargs["shareowner_pk"])
 
     def dispatch(self, request, *args, **kwargs):
-        owner = self.get_shareowner()
+        share_owner = self.get_shareowner()
         # Not sure if 403 is the right error code here...
-        if owner.user is not None:
+        if share_owner.user is not None:
             return HttpResponseForbidden("This ShareOwner already has a User")
-        if owner.is_company:
+        if share_owner.is_company:
             return HttpResponseForbidden("This ShareOwner is a company")
 
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        owner = self.get_shareowner()
+        share_owner = self.get_shareowner()
         user = TapirUser()
-        copy_user_info(owner, user)
+        copy_user_info(share_owner, user)
         kwargs.update({"instance": user})
         return kwargs
 
     def form_valid(self, form):
         with transaction.atomic():
             response = super().form_valid(form)
-            owner = self.get_shareowner()
-            owner.user = form.instance
-            owner.blank_info_fields()
-            owner.save()
+            share_owner = self.get_shareowner()
+            share_owner.user = form.instance
+            share_owner.blank_info_fields()
+            share_owner.save()
 
-            LogEntry.objects.filter(share_owner=owner).update(
+            for callback in on_welcome_session_attendance_update:
+                callback(share_owner)
+
+            LogEntry.objects.filter(share_owner=share_owner).update(
                 user=form.instance, share_owner=None
+            )
+            email = TapirAccountCreatedEmail(tapir_user=share_owner.user)
+            email.send_to_tapir_user(
+                actor=self.request.user, recipient=share_owner.user
             )
             return response
 
 
 @require_POST
 @csrf_protect
-@permission_required("coop.manage")
+@permission_required(PERMISSION_COOP_MANAGE)
 def send_shareowner_membership_confirmation_welcome_email(request, pk):
-    owner = get_object_or_404(ShareOwner, pk=pk)
+    share_owner = get_object_or_404(ShareOwner, pk=pk)
 
-    if owner.is_investing:
-        template_names = [
-            "coop/email/membership_confirmation_welcome_investing.html",
-            "coop/email/membership_confirmation_welcome_investing.default.html",
-        ]
-        subject = f"Bestätigung der Fördernitgliedschaft bei {settings.COOP_NAME}"
-    else:
-        template_names = [
-            "coop/email/membership_confirmation_welcome.html",
-            "coop/email/membership_confirmation_welcome.default.html",
-        ]
-        subject = "Welcome at %(organisation_name)s!"
+    email = (
+        MembershipConfirmationForInvestingMemberEmail
+        if share_owner.is_investing
+        else MembershipConfirmationForActiveMemberEmail
+    )(share_owner=share_owner)
+    email.send_to_share_owner(actor=request.user, recipient=share_owner)
 
-    with translation.override(owner.get_info().preferred_language):
-        subject = _("Welcome at %(organisation_name)s!") % {
-            "organisation_name": settings.COOP_NAME
-        }
-        if owner.is_investing:
-            subject = _(
-                "Confirmation of the investing membership at %(organisation_name)s!"
-            ) % {"organisation_name": settings.COOP_NAME}
-        mail = EmailMessage(
-            subject=subject,
-            body=render_to_string(template_names, {"owner": owner}),
-            from_email=FROM_EMAIL_MEMBER_OFFICE,
-            to=[owner.get_info().email],
-            bcc=[
-                settings.EMAIL_ADDRESS_MEMBER_OFFICE,
-                settings.EMAIL_ADDRESS_ACCOUNTING,
-            ],
-            attachments=[
-                (
-                    "Mitgliedschaftsbestätigung %s.pdf"
-                    % owner.get_info().get_display_name(),
-                    pdfs.get_shareowner_membership_confirmation_pdf(owner).write_pdf(),
-                    "application/pdf",
-                )
-            ],
-        )
-    mail.content_subtype = "html"
-    mail.send()
+    messages.info(request, _("Membership confirmation email sent."))
 
-    log_entry = EmailLogEntry().populate(
-        email_message=mail,
-        actor=request.user,
-        user=owner.user,
-        share_owner=(owner if not owner.user else None),
-    )
-    log_entry.save()
-
-    # TODO(Leon Handreke): Add a message to the user log here.
-    messages.success(request, _("Welcome email with membership confirmation sent."))
-    return redirect(owner.get_absolute_url())
+    return redirect(share_owner.get_absolute_url())
 
 
 @require_GET
-@permission_required("coop.manage")
+@permission_required(PERMISSION_COOP_MANAGE)
 def shareowner_membership_confirmation(request, pk):
-    owner = get_object_or_404(ShareOwner, pk=pk)
-    filename = "Mitgliedschaftsbestätigung %s.pdf" % owner.get_info().get_display_name()
+    share_owner = get_object_or_404(ShareOwner, pk=pk)
+    filename = (
+        "Mitgliedschaftsbestätigung %s.pdf" % share_owner.get_info().get_display_name()
+    )
 
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = 'filename="{}"'.format(filename)
-    response.write(pdfs.get_shareowner_membership_confirmation_pdf(owner).write_pdf())
+    response = HttpResponse(content_type=CONTENT_TYPE_PDF)
+    set_header_for_file_download(response, filename)
+
+    num_shares = (
+        request.GET["num_shares"]
+        if "num_shares" in request.GET.keys()
+        else share_owner.get_active_share_ownerships().count()
+    )
+    date = (
+        datetime.datetime.strptime(request.GET["date"], "%d.%m.%Y").date()
+        if "date" in request.GET.keys()
+        else timezone.now().date()
+    )
+
+    pdf = pdfs.get_shareowner_membership_confirmation_pdf(
+        share_owner,
+        num_shares=num_shares,
+        date=date,
+    )
+    response.write(pdf.write_pdf())
     return response
 
 
 @require_GET
-@permission_required("coop.manage")
-def shareowner_membership_agreement(request, pk):
-    owner = get_object_or_404(ShareOwner, pk=pk)
-    filename = "Beteiligungserklärung %s.pdf" % owner.get_display_name()
+@permission_required(PERMISSION_COOP_MANAGE)
+def shareowner_extra_shares_confirmation(request, pk):
+    share_owner = get_object_or_404(ShareOwner, pk=pk)
+    filename = (
+        "Bestätigung Erwerb Anteile %s.pdf" % share_owner.get_info().get_display_name()
+    )
 
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = 'filename="{}"'.format(filename)
-    response.write(pdfs.get_membership_agreement_pdf(owner).write_pdf())
+    response = HttpResponse(content_type=CONTENT_TYPE_PDF)
+    set_header_for_file_download(response, filename)
+
+    if "num_shares" not in request.GET.keys():
+        raise ValidationError("Missing parameter : num_shares")
+    num_shares = request.GET["num_shares"]
+
+    if "date" not in request.GET.keys():
+        raise ValidationError("Missing parameter : date")
+    date = datetime.datetime.strptime(request.GET["date"], "%d.%m.%Y").date()
+
+    pdf = pdfs.get_confirmation_extra_shares_pdf(
+        share_owner,
+        num_shares=num_shares,
+        date=date,
+    )
+    response.write(pdf.write_pdf())
+    return response
+
+
+@require_GET
+@permission_required(PERMISSION_COOP_MANAGE)
+def shareowner_membership_agreement(request, pk):
+    share_owner = get_object_or_404(ShareOwner, pk=pk)
+    filename = "Beteiligungserklärung %s.pdf" % share_owner.get_display_name()
+
+    response = HttpResponse(content_type=CONTENT_TYPE_PDF)
+    set_header_for_file_download(response, filename)
+    response.write(pdfs.get_membership_agreement_pdf(share_owner).write_pdf())
     return response
 
 
@@ -353,7 +428,7 @@ class CurrentShareOwnerMixin:
 class ShareOwnerTable(django_tables2.Table):
     class Meta:
         model = ShareOwner
-        template_name = "django_tables2/bootstrap4.html"
+        template_name = TAPIR_TABLE_TEMPLATE
         fields = [
             "id",
             "attended_welcome_session",
@@ -375,6 +450,7 @@ class ShareOwnerTable(django_tables2.Table):
             "is_company",
         )
         order_by = "id"
+        attrs = {"class": TAPIR_TABLE_CLASSES}
 
     display_name = django_tables2.Column(
         empty_values=(), verbose_name="Name", orderable=False, exclude_from_export=True
@@ -401,11 +477,8 @@ class ShareOwnerTable(django_tables2.Table):
 
     @staticmethod
     def render_display_name(value, record: ShareOwner):
-        return format_html(
-            "<a href={}>{}</a>",
-            record.get_absolute_url(),
-            record.get_info().get_display_name(),
-        )
+        member = record.get_info()
+        return get_html_link(member.get_absolute_url(), member.get_display_name())
 
     @staticmethod
     def value_display_name(value, record: ShareOwner):
@@ -620,7 +693,7 @@ class ShareOwnerFilter(django_filters.FilterSet):
         queryset: ShareOwner.ShareOwnerQuerySet, name, value: bool
     ):
         unpaid_shares = ShareOwnership.objects.filter(
-            amount_paid__lt=COOP_SHARE_PRICE, owner__in=queryset
+            amount_paid__lt=COOP_SHARE_PRICE, share_owner__in=queryset
         )
 
         if value:
@@ -640,20 +713,25 @@ class ShareOwnerListView(
     table_class = ShareOwnerTable
     model = ShareOwner
     template_name = "coop/shareowner_list.html"
-    permission_required = "coop.manage"
+    permission_required = PERMISSION_COOP_MANAGE
 
     filterset_class = ShareOwnerFilter
 
     export_formats = ["csv", "json"]
 
     def get(self, request, *args, **kwargs):
-        # TODO(Leon Handreke): Make FilterView properly subclasseable
         response = super().get(request, *args, **kwargs)
         if self.object_list.count() == 1:
             return HttpResponseRedirect(
                 self.get_table_data().first().get_absolute_url()
             )
         return response
+
+    def get_queryset(self):
+        queryset = ShareOwner.objects.prefetch_related(
+            "share_ownerships"
+        ).prefetch_related("user")
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -665,7 +743,7 @@ class ShareOwnerListView(
 class ShareOwnerExportMailchimpView(
     PermissionRequiredMixin, CurrentShareOwnerMixin, generic.list.BaseListView
 ):
-    permission_required = "coop.manage"
+    permission_required = PERMISSION_COOP_MANAGE
     model = ShareOwner
 
     def get_queryset(self):
@@ -675,7 +753,7 @@ class ShareOwnerExportMailchimpView(
     @staticmethod
     def render_to_response(context, **response_kwargs):
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = 'attachment; filename="members_mailchimp.csv"'
+        set_header_for_file_download(response, "members_mailchimp.csv")
         writer = csv.writer(response)
 
         writer.writerow(
@@ -687,22 +765,22 @@ class ShareOwnerExportMailchimpView(
                 "Tags",
             ]
         )
-        for owner in context["object_list"]:
-            if not owner.get_info().email:
+        for share_owner in context["object_list"]:
+            if not share_owner.get_info().email:
                 continue
 
             # For some weird reason the tags are in quotes
             lang_tag = ""
-            if owner.get_info().preferred_language == "de":
+            if share_owner.get_info().preferred_language == "de":
                 lang_tag = '"Deutsch"'
-            if owner.get_info().preferred_language == "en":
+            if share_owner.get_info().preferred_language == "en":
                 lang_tag = '"English"'
             writer.writerow(
                 [
-                    owner.get_info().email,
-                    owner.get_info().first_name,
-                    owner.get_info().last_name,
-                    owner.get_info().street,
+                    share_owner.get_info().email,
+                    share_owner.get_info().first_name,
+                    share_owner.get_info().last_name,
+                    share_owner.get_info().street,
                     lang_tag,
                 ]
             )
@@ -713,7 +791,7 @@ class ShareOwnerExportMailchimpView(
 class MatchingProgramTable(django_tables2.Table):
     class Meta:
         model = ShareOwner
-        template_name = "django_tables2/bootstrap4.html"
+        template_name = TAPIR_TABLE_TEMPLATE
         fields = [
             "willing_to_gift_a_share",
         ]
@@ -722,6 +800,7 @@ class MatchingProgramTable(django_tables2.Table):
             "willing_to_gift_a_share",
         )
         order_by = "id"
+        attrs = {"class": TAPIR_TABLE_CLASSES}
 
     display_name = django_tables2.Column(
         empty_values=(), verbose_name="Name", orderable=False
@@ -729,11 +808,8 @@ class MatchingProgramTable(django_tables2.Table):
 
     @staticmethod
     def render_display_name(value, record: ShareOwner):
-        return format_html(
-            "<a href={}>{}</a>",
-            record.get_absolute_url(),
-            record.get_info().get_display_name(),
-        )
+        member = record.get_info()
+        return get_html_link(member.get_absolute_url(), member.get_display_name())
 
     @staticmethod
     def render_willing_to_gift_a_share(value, record: ShareOwner):
@@ -746,7 +822,7 @@ class MatchingProgramTable(django_tables2.Table):
 
 
 class MatchingProgramListView(PermissionRequiredMixin, SingleTableView):
-    permission_required = "coop.manage"
+    permission_required = PERMISSION_COOP_MANAGE
     model = ShareOwner
     template_name = "coop/matching_program.html"
     table_class = MatchingProgramTable
@@ -757,86 +833,5 @@ class MatchingProgramListView(PermissionRequiredMixin, SingleTableView):
             .get_queryset()
             .exclude(willing_to_gift_a_share=None)
             .order_by("willing_to_gift_a_share")
+            .prefetch_related("user")
         )
-
-
-class ShareOwnerTableWelcomeDesk(django_tables2.Table):
-    class Meta:
-        model = ShareOwner
-        template_name = "django_tables2/bootstrap4.html"
-        fields = [
-            "id",
-        ]
-        sequence = (
-            "id",
-            "display_name",
-        )
-        order_by = "id"
-
-    display_name = django_tables2.Column(
-        empty_values=(), verbose_name="Name", orderable=False
-    )
-
-    @staticmethod
-    def render_display_name(value, record: ShareOwner):
-        return format_html(
-            "<a href={}>{}</a>",
-            reverse("coop:welcome_desk_share_owner", args=[record.pk]),
-            record.get_info().get_display_name(),
-        )
-
-
-class ShareOwnerFilterWelcomeDesk(django_filters.FilterSet):
-    display_name = CharFilter(
-        method="display_name_filter", label=_("Name or member ID")
-    )
-
-    @staticmethod
-    def display_name_filter(queryset: ShareOwner.ShareOwnerQuerySet, name, value: str):
-        if not value:
-            return queryset.none()
-
-        if value.isdigit():
-            return queryset.filter(id=int(value))
-
-        return queryset.with_name(value)
-
-
-class WelcomeDeskSearchView(PermissionRequiredMixin, FilterView, SingleTableView):
-    permission_required = "welcomedesk.view"
-    template_name = "coop/welcome_desk_search.html"
-    table_class = ShareOwnerTableWelcomeDesk
-    model = ShareOwner
-    filterset_class = ShareOwnerFilterWelcomeDesk
-
-
-class WelcomeDeskShareOwnerView(PermissionRequiredMixin, generic.DetailView):
-    model = ShareOwner
-    template_name = "coop/welcome_desk_share_owner.html"
-    permission_required = "welcomedesk.view"
-    context_object_name = "share_owner"
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        share_owner: ShareOwner = context_data["share_owner"]
-
-        context_data["can_shop"] = share_owner.can_shop()
-
-        context_data["missing_account"] = share_owner.user is None
-        if context_data["missing_account"]:
-            return context_data
-
-        context_data[
-            "shift_balance_not_ok"
-        ] = not share_owner.user.shift_user_data.is_balance_ok()
-
-        context_data["must_register_to_a_shift"] = (
-            share_owner.user.shift_user_data.attendance_mode
-            == ShiftAttendanceMode.REGULAR
-            and not ShiftAttendanceTemplate.objects.filter(
-                user=share_owner.user
-            ).exists()
-            and not share_owner.user.shift_user_data.is_currently_exempted_from_shifts()
-        )
-
-        return context_data

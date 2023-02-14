@@ -7,23 +7,19 @@ import pyasn1.codec.ber.encoder
 import pyasn1.type.namedtype
 import pyasn1.type.univ
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser, UserManager
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import EmailMultiAlternatives
+from django.contrib.auth.models import AbstractUser, UserManager, User
 from django.db import connections, router, models
-from django.template import loader
 from django.urls import reverse
 from django.utils import translation
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
 from tapir import utils
 from tapir.accounts import validators
 from tapir.log.models import UpdateModelLogEntry
-from tapir.settings import PERMISSIONS, COOP_NAME
+from tapir.settings import PERMISSIONS
 from tapir.utils.models import CountryField
+from tapir.utils.shortcuts import get_html_link
 from tapir.utils.user_utils import UserUtils
 
 log = logging.getLogger(__name__)
@@ -84,26 +80,23 @@ class LdapUser(AbstractUser):
         return self.get_ldap().check_password(raw_password)
 
     def has_perm(self, perm, obj=None):
+        if not hasattr(self, "__cached_perms"):
+            self.__cached_perms = {}
+
+        if perm in self.__cached_perms.keys():
+            return self.__cached_perms[perm]
+
         user_dn = self.get_ldap().build_dn()
-        # TODO(Leon Handreke): This is a case of very aggressive programming, we require both the perm to
-        # be defined in settings and the group to exist. Probably a fair expectation, but explode more
-        # gracefully.
-        # We use a custom permission system based on statically-defined permissions in settings for
-        # these reasons:
-        # 1. Easier to keep an overview of what group is allowed to do what
-        # 2. Permissions must not be tied to models and can therefore be more broad and simple
-        #
-        # TODO(Leon Handreke): Taking the group from LDAP is probably not the smartest move because
-        # I'm about the only person comfortable to use Apache Directory Studio. Move this into
-        # out app and build a nice group management interface?
         for group_cn in settings.PERMISSIONS.get(perm, []):
-            if LdapGroup.objects.filter(cn=group_cn).count() == 0:
+            group = LdapGroup.objects.filter(cn=group_cn).first()
+            if not group:
                 continue
-            group = LdapGroup.objects.get(cn=group_cn)
             if user_dn in group.members:
+                self.__cached_perms[perm] = True
                 return True
 
-        return super().has_perm(perm=perm, obj=obj)
+        self.__cached_perms[perm] = super().has_perm(perm=perm, obj=obj)
+        return self.__cached_perms[perm]
 
 
 class TapirUserQuerySet(models.QuerySet):
@@ -157,6 +150,7 @@ class TapirUser(LdapUser):
     city = models.CharField(_("City"), max_length=50, blank=True)
     country = CountryField(_("Country"), blank=True, default="DE")
     co_purchaser = models.CharField(_("Co-Purchaser"), max_length=150, blank=True)
+    excluded_fields_for_logs = ["password"]
 
     preferred_language = models.CharField(
         _("Preferred Language"),
@@ -170,6 +164,9 @@ class TapirUser(LdapUser):
     def get_display_name(self):
         return UserUtils.build_display_name(self.first_name, self.last_name)
 
+    def get_html_link(self):
+        return get_html_link(url=self.get_absolute_url(), text=self.get_display_name())
+
     def get_display_address(self):
         return UserUtils.build_display_address(
             self.street, self.street_2, self.postcode, self.city
@@ -177,26 +174,6 @@ class TapirUser(LdapUser):
 
     def get_absolute_url(self):
         return reverse("accounts:user_detail", args=[self.pk])
-
-    def get_email_from_template(
-        self, subject_template_names: list, email_template_names: list
-    ):
-        # TODO(Leon Handreke): Should this be in views? Check in the django source how they do it.
-        context = {
-            "site_url": settings.SITE_URL,
-            "uid": urlsafe_base64_encode(force_bytes(self.pk)),
-            "tapir_user": self,
-            "token": default_token_generator.make_token(self),
-            "coop_name": COOP_NAME,
-        }
-        with translation.override(self.preferred_language):
-            subject = loader.render_to_string(subject_template_names, context)
-            # Email subject *must not* contain newlines
-            subject = "".join(subject.splitlines())
-            body = loader.render_to_string(email_template_names, context)
-        email = EmailMultiAlternatives(subject, body, to=[self.email])
-        email.content_subtype = "html"
-        return email
 
     def has_perm(self, perm, obj=None):
         # This is a hack to allow permissions based on client certificates. ClientPermsMiddleware checks the
@@ -216,6 +193,20 @@ class TapirUser(LdapUser):
 class UpdateTapirUserLogEntry(UpdateModelLogEntry):
     template_name = "accounts/log/update_tapir_user_log_entry.html"
     excluded_fields = ["password"]
+
+    def populate(
+        self,
+        old_frozen: dict,
+        new_frozen: dict,
+        tapir_user: TapirUser,
+        actor: User,
+    ):
+        return super().populate_base(
+            actor=actor,
+            tapir_user=tapir_user,
+            old_frozen=old_frozen,
+            new_frozen=new_frozen,
+        )
 
 
 # The following LDAP-related models were taken from

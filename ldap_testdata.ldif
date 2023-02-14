@@ -1,10 +1,10 @@
-dn: ou=people,dc=wirmarkt,dc=de
+dn: ou=people,dc=supercoop,dc=de
 changetype: add
 ou: people
 objectClass: organizationalUnit
 objectClass: top
 
-dn: uid=admin,ou=people,dc=wirmarkt,dc=de
+dn: uid=admin,ou=people,dc=supercoop,dc=de
 changetype: add
 objectClass: inetOrgPerson
 objectClass: organizationalPerson
@@ -13,71 +13,27 @@ cn: admin
 sn: admin
 uid: admin
 
-dn: uid=admin,ou=people,dc=wirmarkt,dc=de
+dn: uid=admin,ou=people,dc=supercoop,dc=de
 changetype: modify
 replace: userPassword
 userPassword: admin
 
-dn: uid=ariana.perrin,ou=people,dc=wirmarkt,dc=de
-changetype: add
-objectClass: inetOrgPerson
-objectClass: organizationalPerson
-objectClass: person
-cn: ariana.perrin
-sn: ariana.perrin
-uid: ariana.perrin
-
-dn: uid=ariana.perrin,ou=people,dc=wirmarkt,dc=de
-changetype: modify
-replace: userPassword
-userPassword: ariana.perrin
-
-dn: uid=roberto.cortes,ou=people,dc=wirmarkt,dc=de
-changetype: add
-objectClass: inetOrgPerson
-objectClass: organizationalPerson
-objectClass: person
-cn: roberto.cortes
-sn: roberto.cortes
-uid: roberto.cortes
-
-dn: uid=roberto.cortes,ou=people,dc=wirmarkt,dc=de
-changetype: modify
-replace: userPassword
-userPassword: roberto.cortes
-
-dn: uid=nicolas.vicente,ou=people,dc=wirmarkt,dc=de
-changetype: add
-objectClass: inetOrgPerson
-objectClass: organizationalPerson
-objectClass: person
-cn: nicolas.vicente
-sn: nicolas.vicente
-uid: nicolas.vicente
-
-dn: uid=nicolas.vicente,ou=people,dc=wirmarkt,dc=de
-changetype: modify
-replace: userPassword
-userPassword: nicolas.vicente
-
-dn: ou=groups,dc=wirmarkt,dc=de
+dn: ou=groups,dc=supercoop,dc=de
 changetype: add
 objectClass: organizationalUnit
 objectClass: top
 ou: groups
 
-dn: cn=vorstand,ou=groups,dc=wirmarkt,dc=de
+dn: cn=vorstand,ou=groups,dc=supercoop,dc=de
 changetype: add
 objectClass: groupOfNames
 objectClass: top
 cn: vorstand
-member: uid=admin,ou=people,dc=wirmarkt,dc=de
-member: uid=ariana.perrin,ou=people,dc=wirmarkt,dc=de
+member: uid=admin,ou=people,dc=supercoop,dc=de
 
-dn: cn=member-office,ou=groups,dc=wirmarkt,dc=de
+dn: cn=member-office,ou=groups,dc=supercoop,dc=de
 changetype: add
 objectClass: groupOfNames
 objectClass: top
 cn: member-office
-member: uid=admin,ou=people,dc=wirmarkt,dc=de
-member: uid=roberto.cortes,ou=people,dc=wirmarkt,dc=de
+member: uid=admin,ou=people,dc=supercoop,dc=de
