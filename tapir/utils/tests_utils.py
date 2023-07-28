@@ -39,9 +39,11 @@ class TapirSeleniumTestBase(StaticLiveServerTestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.host = socket.gethostbyname(socket.gethostname())
+        from selenium.webdriver.firefox.options import Options as FirefoxOptions
+
         cls.selenium = webdriver.Remote(
             command_executor=f"http://selenium:4444/wd/hub",
-            desired_capabilities=DesiredCapabilities.FIREFOX,
+            options=FirefoxOptions(),
         )
         cls.selenium.maximize_window()
         cls.selenium.implicitly_wait(cls.DEFAULT_TIMEOUT)
